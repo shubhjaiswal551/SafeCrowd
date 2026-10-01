@@ -4,6 +4,31 @@ export type AlertSeverity = 'info' | 'warning' | 'high' | 'critical';
 
 export type IncidentStatus = 'open' | 'acknowledged' | 'resolved';
 
+/**
+ * Raw Metrics shape matching docs/schema.md
+ */
+export interface MetricsData {
+  density: number;
+  flow_vector: [number, number];
+  velocity_variance: number;
+  headcount: number;
+  avg_speed: number;
+  heatmap?: number[][];
+}
+
+/**
+ * Redis Live Alert payload shape matching docs/schema.md
+ */
+export interface LiveAlertPayload {
+  camera_id: string;
+  zone_id?: string;
+  event_type: 'surge' | 'bottleneck' | 'dispersal' | string;
+  severity: 1 | 2 | 3 | 4 | 5;
+  detected_at: string;
+  metrics: MetricsData;
+  snapshot_url?: string;
+}
+
 export type CrowdEvent = {
   cameraId: string;
   zoneName: string;
@@ -14,6 +39,11 @@ export type CrowdEvent = {
   anomalyType?: string;
   severity?: AlertSeverity;
   timestamp: string;
+  // schema.md fields
+  camera_id?: string;
+  zone_id?: string;
+  event_type?: string;
+  metrics?: MetricsData;
 };
 
 export type HeatmapCell = {
@@ -35,6 +65,10 @@ export type Alert = {
   acknowledged: boolean;
   acknowledgedBy?: string;
   snapshotFrame?: number;
+  snapshotUrl?: string;
+  // schema.md fields
+  numericSeverity?: number;
+  metrics?: MetricsData;
 };
 
 export type Incident = {
@@ -47,6 +81,8 @@ export type Incident = {
   status: IncidentStatus;
   acknowledgedBy?: string;
   resolvedAt?: string;
+  notes?: string;
+  isFalsePositive?: boolean;
 };
 
 export type UserProfile = {
@@ -68,4 +104,6 @@ export type CameraState = {
   flowDirection: number;
   lastUpdated: string;
   lastUpdatedAgo: number;
+  rtspUrl?: string;
+  isActive?: boolean;
 };

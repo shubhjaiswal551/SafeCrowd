@@ -8,6 +8,7 @@ interface AlertFeedProps {
   alerts: Alert[];
   onAcknowledge?: (id: string) => void;
   onViewSnapshot?: (id: string) => void;
+  onResolve?: (id: string, notes: string, isFalsePositive: boolean) => void;
 }
 
 const EmptyState: React.FC = () => (
@@ -40,6 +41,7 @@ const AlertFeed: React.FC<AlertFeedProps> = ({
   alerts,
   onAcknowledge,
   onViewSnapshot,
+  onResolve,
 }) => {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const prevCount = useRef(alerts.length);
@@ -124,6 +126,7 @@ const AlertFeed: React.FC<AlertFeedProps> = ({
           alert={snapshotAlert}
           onClose={() => setSnapshotAlert(null)}
           onAcknowledge={onAcknowledge}
+          onResolve={onResolve}
         />
       )}
     </>

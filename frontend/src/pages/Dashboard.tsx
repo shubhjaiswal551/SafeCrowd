@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Sidebar from '../components/dashboard/Sidebar';
 import StatusBar from '../components/dashboard/StatusBar';
 import CameraPanel from '../components/dashboard/CameraPanel';
 import HeatmapGrid from '../components/dashboard/HeatmapGrid';
 import AlertFeed from '../components/dashboard/AlertFeed';
 import { useAuth } from '../context/AuthContext';
+import { useCrowdStream } from '../hooks/useCrowdStream';
 import {
   startCrowdSimulator,
   stopCrowdSimulator,
@@ -20,6 +21,7 @@ import type {
   Alert,
   Incident,
   CameraHeatmap,
+  CrowdEvent,
 } from '../types/crowdEvent';
 import {
   AreaChart,
@@ -58,51 +60,97 @@ const Dashboard: React.FC = () => {
     return arr;
   });
 
+  const handleWsEvent = useCallback((ev: CrowdEvent) => {
+    setCameras((prev) =>
+      prev.map((c) =>
+        c.cameraId === ev.cameraId
+          ? {
+              ...c,
+              headcount: ev.headcount,
+              density: ev.density,
+              flowDirection: ev.flowDirection,
+              lastUpdated: ev.timestamp,
+              lastUpdatedAgo: 0,
+            }
+          : c,
+      ),
+    );
+
+    if (ev.metrics?.heatmap) {
+      setHeatmaps((prev) =>
+        prev.map((h) =>
+          h.cameraId === ev.cameraId ? { ...h, grid: ev.metrics!.heatmap! } : h,
+        ),
+      );
+    }
+
+    if (ev.anomaly) {
+      const newAlert: Alert = {
+        id: `alt-${Date.now().toString(36)}`,
+        cameraId: ev.cameraId,
+        zoneName: ev.zoneName,
+        type: ev.anomalyType || 'Crowd Anomaly Detected',
+        severity: ev.severity || 'high',
+        timestamp: ev.timestamp,
+        acknowledged: false,
+        metrics: ev.metrics,
+        snapshotUrl: '/12269404_2320_1080_30fps.mp4',
+      };
+      setAlerts((prev) => [newAlert, ...prev].slice(0, 50));
+    }
+  }, []);
+
+  const { isConnected: isWsConnected } = useCrowdStream(handleWsEvent);
+
   useEffect(() => {
-    startCrowdSimulator();
+    // Only run mock generator if WebSocket backend is not connected
+    if (!isWsConnected) {
+      startCrowdSimulator();
+    } else {
+      stopCrowdSimulator();
+    }
+
     const offs: Array<() => void> = [];
-    const eventMap: Record<string, CameraState> = {};
-    cameras.forEach((c) => (eventMap[c.cameraId] = c));
-
-    offs.push(
-      onCrowdEvent((ev) => {
-        setCameras((prev) => {
-          const next = prev.map((c) =>
-            c.cameraId === ev.cameraId
-              ? {
-                  ...c,
-                  headcount: ev.headcount,
-                  density: ev.density,
-                  flowDirection: ev.flowDirection,
-                  lastUpdated: ev.timestamp,
-                  lastUpdatedAgo: 0,
-                }
-              : c,
+    if (!isWsConnected) {
+      offs.push(
+        onCrowdEvent((ev) => {
+          setCameras((prev) =>
+            prev.map((c) =>
+              c.cameraId === ev.cameraId
+                ? {
+                    ...c,
+                    headcount: ev.headcount,
+                    density: ev.density,
+                    flowDirection: ev.flowDirection,
+                    lastUpdated: ev.timestamp,
+                    lastUpdatedAgo: 0,
+                  }
+                : c,
+            ),
           );
-          return next;
-        });
-      }),
-    );
+        }),
+      );
 
-    offs.push(
-      onAlert((alt) =>
-        setAlerts((prev) => [alt, ...prev].slice(0, 50)),
-      ),
-    );
-    offs.push(
-      onIncident((inc) =>
-        setIncidents((prev) => [inc, ...prev].slice(0, 100)),
-      ),
-    );
-    offs.push(
-      onHeatmap((hm) => {
-        setHeatmaps((prev) => {
-          const exists = prev.some((p) => p.cameraId === hm.cameraId);
-          if (exists) return prev.map((p) => (p.cameraId === hm.cameraId ? hm : p));
-          return [...prev, hm];
-        });
-      }),
-    );
+      offs.push(
+        onAlert((alt) =>
+          setAlerts((prev) => [alt, ...prev].slice(0, 50)),
+        ),
+      );
+      offs.push(
+        onIncident((inc) =>
+          setIncidents((prev) => [inc, ...prev].slice(0, 100)),
+        ),
+      );
+      offs.push(
+        onHeatmap((hm) => {
+          setHeatmaps((prev) => {
+            const exists = prev.some((p) => p.cameraId === hm.cameraId);
+            if (exists) return prev.map((p) => (p.cameraId === hm.cameraId ? hm : p));
+            return [...prev, hm];
+          });
+        }),
+      );
+    }
 
     const ticker = window.setInterval(() => {
       setCameras((prev) =>
@@ -137,7 +185,7 @@ const Dashboard: React.FC = () => {
       clearInterval(ticker);
       clearInterval(historyTicker);
     };
-  }, []);
+  }, [isWsConnected]);
 
   const handleAcknowledgeAlert = (id: string) => {
     setAlerts((prev) =>
@@ -151,6 +199,27 @@ const Dashboard: React.FC = () => {
           : a,
       ),
     );
+  };
+
+  const handleResolveAlert = (id: string, notes: string, isFalsePositive: boolean) => {
+    const target = alerts.find((a) => a.id === id);
+    if (target) {
+      const resolvedIncident: Incident = {
+        id: `inc-${Date.now().toString(36)}`,
+        cameraId: target.cameraId,
+        zoneName: target.zoneName,
+        alertType: target.type,
+        severity: target.severity,
+        status: 'resolved',
+        timestamp: target.timestamp,
+        acknowledgedBy: profile?.displayName ?? 'Operator',
+        resolvedAt: new Date().toISOString(),
+        notes: notes,
+        isFalsePositive: isFalsePositive,
+      };
+      setIncidents((prev) => [resolvedIncident, ...prev].slice(0, 100));
+      setAlerts((prev) => prev.filter((a) => a.id !== id));
+    }
   };
 
   const unacknowledged = alerts.filter((a) => !a.acknowledged).length;
@@ -179,8 +248,10 @@ const Dashboard: React.FC = () => {
                   value: totalHeadcount.toLocaleString(),
                   sub: 'TOTAL DETECTED IN ZONES',
                   accent: 'text-text-primary',
-                  chipClass: 'chip bg-accent/15 border-accent/40 text-accent font-mono',
-                  chipText: 'LIVE SYNC',
+                  chipClass: isWsConnected
+                    ? 'chip-safe font-mono'
+                    : 'chip bg-accent/15 border-accent/40 text-accent font-mono',
+                  chipText: isWsConnected ? 'BACKEND WS' : 'LIVE SYNC',
                 },
                 {
                   label: 'Active Alerts',
@@ -403,6 +474,7 @@ const Dashboard: React.FC = () => {
                 <AlertFeed
                   alerts={alerts}
                   onAcknowledge={handleAcknowledgeAlert}
+                  onResolve={handleResolveAlert}
                 />
               </div>
             </div>

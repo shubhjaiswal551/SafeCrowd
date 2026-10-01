@@ -1,0 +1,141 @@
+"""
+SafeCrowd - Incidents Router
+Handles logging, operator acknowledgement, and resolution workflows per schema.md and AppFlow.md.
+"""
+
+import uuid
+from datetime import datetime
+from typing import Dict, List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from ..models.schemas import (
+    IncidentCreate,
+    IncidentResponse,
+    IncidentAcknowledge,
+    IncidentResolve,
+    MetricsData,
+)
+from .auth import get_current_user
+
+router = APIRouter(prefix="/incidents", tags=["Incidents"])
+
+# In-memory incident store seeded with realistic initial records
+INCIDENTS_DB: Dict[str, Dict] = {
+    "inc-001": {
+        "id": "inc-001",
+        "camera_id": "cam-001",
+        "zone_id": "zone-001",
+        "event_type": "surge",
+        "severity": 4,
+        "detected_at": "2026-10-01T08:15:20Z",
+        "snapshot_url": "/12269404_2320_1080_30fps.mp4",
+        "metrics_json": {
+            "density": 4.2,
+            "flow_vector": (0.8, -0.2),
+            "velocity_variance": 4.1,
+            "headcount": 78,
+            "avg_speed": 4.5,
+            "heatmap": None,
+        },
+        "acknowledged_by": "usr-op-001",
+        "acknowledged_at": "2026-10-01T08:16:05Z",
+        "resolved": True,
+        "resolved_at": "2026-10-01T08:25:00Z",
+        "notes": "Security dispatched to open overflow turnstiles. Flow normalized.",
+    },
+    "inc-002": {
+        "id": "inc-002",
+        "camera_id": "cam-002",
+        "zone_id": "zone-002",
+        "event_type": "bottleneck",
+        "severity": 3,
+        "detected_at": "2026-10-01T09:40:12Z",
+        "snapshot_url": "/5287069-sd_960_540_30fps.mp4",
+        "metrics_json": {
+            "density": 3.8,
+            "flow_vector": (0.1, 0.0),
+            "velocity_variance": 0.3,
+            "headcount": 65,
+            "avg_speed": 0.4,
+            "heatmap": None,
+        },
+        "acknowledged_by": "usr-op-001",
+        "acknowledged_at": "2026-10-01T09:41:00Z",
+        "resolved": False,
+        "resolved_at": None,
+        "notes": None,
+    },
+}
+
+@router.get("", response_model=List[IncidentResponse])
+async def list_incidents(
+    camera_id: Optional[str] = Query(None),
+    severity: Optional[int] = Query(None, ge=1, le=5),
+    resolved: Optional[bool] = Query(None),
+    user: Dict = Depends(get_current_user),
+):
+    results = list(INCIDENTS_DB.values())
+    if camera_id:
+        results = [i for i in results if i["camera_id"] == camera_id]
+    if severity is not None:
+        results = [i for i in results if i["severity"] == severity]
+    if resolved is not None:
+        results = [i for i in results if i["resolved"] == resolved]
+
+    # Return descending by detected_at
+    results.sort(key=lambda x: x["detected_at"], reverse=True)
+    return results
+
+@router.post("", response_model=IncidentResponse, status_code=status.HTTP_201_CREATED)
+async def create_incident(
+    incident_in: IncidentCreate,
+    user: Dict = Depends(get_current_user),
+):
+    iid = f"inc-{uuid.uuid4().hex[:6]}"
+    now = datetime.utcnow().isoformat() + "Z"
+    incident = {
+        "id": iid,
+        "camera_id": incident_in.camera_id,
+        "zone_id": incident_in.zone_id,
+        "event_type": incident_in.event_type,
+        "severity": incident_in.severity,
+        "detected_at": now,
+        "snapshot_url": incident_in.snapshot_url,
+        "metrics_json": incident_in.metrics_json.dict(),
+        "acknowledged_by": None,
+        "acknowledged_at": None,
+        "resolved": False,
+        "resolved_at": None,
+        "notes": None,
+    }
+    INCIDENTS_DB[iid] = incident
+    return incident
+
+@router.post("/{incident_id}/acknowledge", response_model=IncidentResponse)
+async def acknowledge_incident(
+    incident_id: str,
+    ack: IncidentAcknowledge,
+    user: Dict = Depends(get_current_user),
+):
+    if incident_id not in INCIDENTS_DB:
+        raise HTTPException(status_code=404, detail="Incident not found")
+
+    incident = INCIDENTS_DB[incident_id]
+    incident["acknowledged_by"] = ack.operator_name or ack.operator_id or user.get("email")
+    incident["acknowledged_at"] = datetime.utcnow().isoformat() + "Z"
+    return incident
+
+@router.post("/{incident_id}/resolve", response_model=IncidentResponse)
+async def resolve_incident(
+    incident_id: str,
+    res: IncidentResolve,
+    user: Dict = Depends(get_current_user),
+):
+    if incident_id not in INCIDENTS_DB:
+        raise HTTPException(status_code=404, detail="Incident not found")
+
+    incident = INCIDENTS_DB[incident_id]
+    incident["resolved"] = True
+    incident["resolved_at"] = datetime.utcnow().isoformat() + "Z"
+    note_prefix = "[FALSE POSITIVE] " if res.is_false_positive else ""
+    incident["notes"] = f"{note_prefix}{res.notes.strip()}"
+    return incident
