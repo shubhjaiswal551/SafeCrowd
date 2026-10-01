@@ -37,3 +37,4 @@ backend/__pycache__/
 *.pt
 *.onnx
 runs/
+*.db

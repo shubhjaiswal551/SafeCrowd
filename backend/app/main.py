@@ -18,8 +18,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger("safecrowd.backend")
 
+from .core.database import engine, Base
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Startup: Ensure database schema is initialized
+    logger.info("Initializing database tables...")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
     # Startup: Launch video inference pipeline in background
     logger.info("Starting SafeCrowd analytics background worker...")
     task = asyncio.create_task(stream_worker.run_pipeline_loop())

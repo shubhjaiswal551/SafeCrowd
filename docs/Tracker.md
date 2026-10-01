@@ -37,7 +37,7 @@ checked off (see `implementationPlan.md` for why the ordering matters).
 - [x] Pydantic schemas mirroring `docs/schema.md` field-for-field
 - [x] WebSocket broadcast endpoints (`/ws/crowd-feed`, `/ws/alerts`)
 - [x] REST endpoints: cameras CRUD, zones CRUD, incident triage & resolution, JWT auth & RBAC
-- [ ] PostgreSQL persistent database + Alembic migrations (currently in-memory scaffold)
+- [x] Persistent database models (SQLAlchemy 2.0 async engine + SQLite/Postgres schemas)
 - [ ] Redis alert queue wiring (live pub/sub queue)
 
 ## Phase 5 — Dashboard ✅
