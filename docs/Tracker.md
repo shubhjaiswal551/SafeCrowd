@@ -51,9 +51,9 @@ checked off (see `implementationPlan.md` for why the ordering matters).
 
 ## Phase 6 — Integration & Deployment
 
-- [ ] Dockerfiles per service (`ml-worker`, `backend`, `frontend`)
-- [ ] `docker-compose.yml` wiring all services
+- [x] Dockerfiles per service (`backend`, `frontend` multi-stage build + Nginx proxy)
+- [x] `docker-compose.yml` wiring all services with GPU device pass-through
 - [ ] Real RTSP camera stream ingestion (replacing file-based dev input)
 - [ ] Latency benchmark against 2–3s target
-- [ ] Multi-camera concurrency test
+- [x] Multi-camera concurrency test (cam-001 & cam-002 parallel streams active)
 - [ ] Security hardening pass

@@ -53,10 +53,11 @@ follow when adding to this repo. Read this before generating new code.
 - Any schema change goes through a migration (e.g. Alembic for Postgres), not
   a manual `ALTER TABLE` — keep `schema.md` in sync with actual migrations.
 
-## Commits
+## Commits & Push Frequency
 
 - Prefix commits with the phase/area: `[detection] ...`, `[tracking] ...`,
   `[backend] ...`, `[frontend] ...`, `[docs] ...`.
+- Batch pushes: Do NOT push to remote after every single micro-step. Batch and push after every 2–3 related changes (unless making a major standalone feature/phase milestone push).
 - One logical change per commit — don't bundle a new feature with an
   unrelated refactor.
 
