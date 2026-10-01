@@ -119,8 +119,8 @@ class SafeCrowdTracker:
         # Classify density level
         density_level = self._classify_density(headcount)
 
-        # Anomaly / Surge decision rule
-        anomaly, anomaly_type, severity = self._detect_anomaly(headcount, density_level, avg_speed)
+        # Anomaly / Surge decision rule (PRD compliant with velocity variance)
+        anomaly, anomaly_type, severity = self._detect_anomaly(headcount, density_level, avg_speed, velocities=velocities)
 
         # Annotated visualization frame
         annotated_frame = results.plot()
@@ -162,23 +162,47 @@ class SafeCrowdTracker:
 
     def _classify_density(self, count: int) -> str:
         """Categorizes headcount into density levels."""
-        if count < 8:
+        if count < 15:
             return "low"
-        elif count < 18:
+        elif count < 35:
             return "moderate"
-        elif count < 32:
+        elif count < 75:
             return "high"
         else:
             return "critical"
 
-    def _detect_anomaly(self, headcount: int, density: str, avg_speed: float) -> Tuple[bool, Optional[str], Optional[str]]:
-        """Simple rule-based heuristic for sudden surges or bottlenecks."""
-        if density == "critical":
-            return True, "Overcrowding / Critical Congestion", "critical"
-        elif density == "high" and avg_speed < 1.0:
-            return True, "Bottleneck Forming / Slow Movement", "warning"
-        elif avg_speed > 35.0:
-            return True, "Rapid Crowd Dispersal / Panic", "high"
+    def _detect_anomaly(
+        self, headcount: int, density: str, avg_speed: float, velocities: List[Tuple[float, float]] = None
+    ) -> Tuple[bool, Optional[str], Optional[str]]:
+        """
+        PRD-compliant anomaly detection:
+        High density ALONE (e.g. peaceful crowd/queue) is NOT an anomaly.
+        Requires high velocity variance, rapid panic dispersal, or complete standstill bottleneck.
+        """
+        if not velocities or len(velocities) < 3:
+            return False, None, None
+
+        # Compute speed variance
+        speeds = [math.sqrt(v[0]**2 + v[1]**2) for v in velocities]
+        mean_speed = float(np.mean(speeds))
+        variance = float(np.var(speeds))
+
+        # 1. Panic Dispersal / Stampede Flight: Sudden high speed and high variance
+        if mean_speed > 25.0 and variance > 5.0:
+            return True, "Rapid Crowd Dispersal / Panic Flight", "critical"
+
+        # 2. Crowd Surge / Violent Turbulence: High density with erratic chaotic movement
+        if density == "critical" and variance > 6.0:
+            return True, "Crowd Surge / Compression Wave", "critical"
+
+        if density == "high" and variance > 8.0:
+            return True, "Turbulent Crowd Flow / Surge", "high"
+
+        # 3. Severe Bottleneck: Dense crowd brought to a complete crawl
+        if density == "critical" and mean_speed < 0.4:
+            return True, "Dangerous Bottleneck / Complete Stoppage", "warning"
+
+        # Normal orderly crowd movement (no false alarms)
         return False, None, None
 
 

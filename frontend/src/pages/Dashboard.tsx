@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import Sidebar from '../components/dashboard/Sidebar';
 import StatusBar from '../components/dashboard/StatusBar';
 import CameraPanel from '../components/dashboard/CameraPanel';
@@ -60,6 +60,8 @@ const Dashboard: React.FC = () => {
     return arr;
   });
 
+  const lastAlertTimestampRef = useRef<Record<string, number>>({});
+
   const handleWsEvent = useCallback((ev: CrowdEvent) => {
     setCameras((prev) =>
       prev.map((c) =>
@@ -85,18 +87,24 @@ const Dashboard: React.FC = () => {
     }
 
     if (ev.anomaly) {
-      const newAlert: Alert = {
-        id: `alt-${Date.now().toString(36)}`,
-        cameraId: ev.cameraId,
-        zoneName: ev.zoneName,
-        type: ev.anomalyType || 'Crowd Anomaly Detected',
-        severity: ev.severity || 'high',
-        timestamp: ev.timestamp,
-        acknowledged: false,
-        metrics: ev.metrics,
-        snapshotUrl: '/12269404_2320_1080_30fps.mp4',
-      };
-      setAlerts((prev) => [newAlert, ...prev].slice(0, 50));
+      const now = Date.now();
+      const lastFired = lastAlertTimestampRef.current[ev.cameraId] || 0;
+      // 30-second cooldown per camera to avoid flooding 10 alerts/sec
+      if (now - lastFired > 30_000) {
+        lastAlertTimestampRef.current[ev.cameraId] = now;
+        const newAlert: Alert = {
+          id: `alt-${now.toString(36)}`,
+          cameraId: ev.cameraId,
+          zoneName: ev.zoneName,
+          type: ev.anomalyType || 'Crowd Anomaly Detected',
+          severity: ev.severity || 'high',
+          timestamp: ev.timestamp,
+          acknowledged: false,
+          metrics: ev.metrics,
+          snapshotUrl: '/12269404_2320_1080_30fps.mp4',
+        };
+        setAlerts((prev) => [newAlert, ...prev].slice(0, 50));
+      }
     }
   }, []);
 
@@ -132,9 +140,14 @@ const Dashboard: React.FC = () => {
       );
 
       offs.push(
-        onAlert((alt) =>
-          setAlerts((prev) => [alt, ...prev].slice(0, 50)),
-        ),
+        onAlert((alt) => {
+          const now = Date.now();
+          const last = lastAlertTimestampRef.current[alt.cameraId] || 0;
+          if (now - last > 25_000) {
+            lastAlertTimestampRef.current[alt.cameraId] = now;
+            setAlerts((prev) => [alt, ...prev].slice(0, 50));
+          }
+        }),
       );
       offs.push(
         onIncident((inc) =>
