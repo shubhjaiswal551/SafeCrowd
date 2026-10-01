@@ -28,6 +28,27 @@ const IncidentLog: React.FC = () => {
   const [dateTo, setDateTo] = useState('');
 
   useEffect(() => {
+    // Fetch persisted incidents from backend API
+    fetch('http://localhost:8000/incidents/')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: any[]) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped: Incident[] = data.map((item) => ({
+            id: item.id,
+            timestamp: item.detected_at,
+            cameraId: item.camera_id,
+            zoneName: item.zone_id === 'zone-001' ? 'Main Entrance Gate' : 'Central Courtyard',
+            alertType: item.event_type.charAt(0).toUpperCase() + item.event_type.slice(1) + ' Detected',
+            severity: item.severity >= 4 ? 'critical' : item.severity === 3 ? 'high' : 'warning',
+            status: item.resolved ? 'resolved' : item.acknowledged_at ? 'acknowledged' : 'open',
+            acknowledgedBy: item.acknowledged_by || undefined,
+            resolvedAt: item.resolved_at || undefined,
+          }));
+          setIncidents(mapped);
+        }
+      })
+      .catch((err) => console.warn('Could not fetch backend incidents:', err));
+
     startCrowdSimulator();
     const off1 = onIncident((inc) =>
       setIncidents((prev) => [inc, ...prev].slice(0, 200)),
