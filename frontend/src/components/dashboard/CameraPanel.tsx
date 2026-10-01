@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import type { DensityLevel } from '../../types/crowdEvent';
 
 interface CameraPanelProps {
   cameraId: string;
   zoneName: string;
-  description?: string;
+  description: string;
   headcount: number;
   density: DensityLevel;
   flowDirection: number;
@@ -12,389 +12,29 @@ interface CameraPanelProps {
   anomaly?: boolean;
   anomalyType?: string;
   videoSrc?: string;
+  onHeadcountChange?: (count: number) => void;
 }
 
 const densityConfig: Record<
   DensityLevel,
-  { label: string; className: string; ring: string }
+  { label: string; className: string }
 > = {
   low: {
     label: 'LOW',
-    className: 'chip-safe',
-    ring: 'ring-safe/50',
+    className: 'chip-safe font-mono',
   },
   moderate: {
     label: 'MODERATE',
-    className: 'chip-warn',
-    ring: 'ring-warn/50',
+    className: 'chip-warn font-mono',
   },
   high: {
     label: 'HIGH',
-    className: 'chip-danger',
-    ring: 'ring-danger/50',
+    className: 'chip-danger font-mono',
   },
   critical: {
     label: 'CRITICAL',
-    className: 'chip-critical',
-    ring: 'ring-critical',
+    className: 'chip-critical font-mono',
   },
-};
-
-const SceneBackdrop: React.FC<{ cameraId: string }> = ({ cameraId }) => {
-  if (cameraId === 'cam-001') {
-    return (
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 70% 60% at 50% 85%, rgba(16, 185, 129, 0.10), transparent 60%), linear-gradient(180deg, #1a2435 0%, #0e141d 40%, #0a0f16 100%)',
-        }}
-      >
-        <svg
-          className="absolute inset-0 w-full h-full opacity-50"
-          viewBox="0 0 400 220"
-          preserveAspectRatio="none"
-        >
-          <defs>
-            <linearGradient id="gate-sky" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#1a2740" />
-              <stop offset="100%" stopColor="#0f1824" />
-            </linearGradient>
-          </defs>
-          <rect width="400" height="220" fill="url(#gate-sky)" />
-          <polygon
-            points="0,220 60,140 130,120 200,110 270,120 340,140 400,220"
-            fill="#131a26"
-            stroke="#1e2a3d"
-            strokeWidth="1"
-          />
-          <rect x="160" y="120" width="80" height="100" fill="none" stroke="#2d425f" strokeWidth="1.5" />
-          <line x1="200" y1="120" x2="200" y2="220" stroke="#2d425f" strokeWidth="1" />
-          <line x1="160" y1="160" x2="240" y2="160" stroke="#2d425f" strokeWidth="1" />
-          {Array.from({ length: 7 }).map((_, i) => (
-            <circle
-              key={i}
-              cx={100 + i * 35 + Math.sin(i) * 10}
-              cy="195"
-              r="2.5"
-              fill="rgba(34, 211, 238, 0.55)"
-            />
-          ))}
-        </svg>
-      </div>
-    );
-  }
-  return (
-    <div
-      className="absolute inset-0"
-      style={{
-        background:
-          'radial-gradient(ellipse 60% 70% at 50% 50%, rgba(245, 158, 11, 0.06), transparent 60%), linear-gradient(180deg, #1a1a28 0%, #12111c 50%, #0b0b12 100%)',
-      }}
-    >
-      <svg
-        className="absolute inset-0 w-full h-full opacity-60"
-        viewBox="0 0 400 220"
-        preserveAspectRatio="none"
-      >
-        <circle cx="200" cy="110" r="90" fill="none" stroke="#2a2e4a" strokeWidth="0.8" />
-        <circle cx="200" cy="110" r="60" fill="none" stroke="#2a2e4a" strokeWidth="0.8" />
-        <circle cx="200" cy="110" r="30" fill="none" stroke="#2a2e4a" strokeWidth="0.8" />
-        <line x1="200" y1="20" x2="200" y2="200" stroke="#2a2e4a" strokeWidth="0.6" />
-        <line x1="110" y1="110" x2="290" y2="110" stroke="#2a2e4a" strokeWidth="0.6" />
-        <line x1="136" y1="46" x2="264" y2="174" stroke="#2a2e4a" strokeWidth="0.5" />
-        <line x1="264" y1="46" x2="136" y2="174" stroke="#2a2e4a" strokeWidth="0.5" />
-        {Array.from({ length: 11 }).map((_, i) => {
-          const a = (i / 11) * Math.PI * 2 + 0.3;
-          const r = 50 + (i % 3) * 20;
-          return (
-            <circle
-              key={i}
-              cx={200 + Math.cos(a) * r}
-              cy={110 + Math.sin(a) * r}
-              r="2.5"
-              fill="rgba(245, 158, 11, 0.55)"
-            />
-          );
-        })}
-      </svg>
-    </div>
-  );
-};
-
-const TrackedDots: React.FC<{ density: DensityLevel; seed: number }> = ({
-  density,
-  seed,
-}) => {
-  const count =
-    density === 'low' ? 14 : density === 'moderate' ? 28 : density === 'high' ? 46 : 62;
-  const dots = useMemo(() => {
-    const arr: Array<{ x: number; y: number; s: number; d: number; delay: number }> = [];
-    let s = seed * 9301 + 49297;
-    const rnd = () => {
-      s = (s * 9301 + 49297) % 233280;
-      return s / 233280;
-    };
-    for (let i = 0; i < count; i++) {
-      arr.push({
-        x: 10 + rnd() * 80,
-        y: 25 + rnd() * 65,
-        s: 2 + rnd() * 2,
-        d: 6 + rnd() * 8,
-        delay: rnd() * 8,
-      });
-    }
-    return arr;
-  }, [count, seed]);
-
-  return (
-    <div className="absolute inset-0">
-      {dots.map((d, i) => (
-        <span
-          key={i}
-          className="absolute block rounded-full animate-dot-move"
-          style={{
-            left: `${d.x}%`,
-            top: `${d.y}%`,
-            width: `${d.s}px`,
-            height: `${d.s}px`,
-            background:
-              density === 'critical'
-                ? 'rgba(239, 68, 68, 0.85)'
-                : density === 'high'
-                  ? 'rgba(245, 158, 11, 0.85)'
-                  : 'rgba(34, 211, 238, 0.75)',
-            boxShadow:
-              density === 'critical'
-                ? '0 0 6px rgba(239, 68, 68, 0.7)'
-                : density === 'high'
-                  ? '0 0 5px rgba(245, 158, 11, 0.6)'
-                  : '0 0 4px rgba(34, 211, 238, 0.6)',
-            animationDuration: `${d.d}s`,
-            animationDelay: `-${d.delay}s`,
-          }}
-        />
-      ))}
-    </div>
-  );
-};
-
-interface VideoOverlayProps {
-  videoSrc: string;
-  onHeadcountChange?: (count: number, fastCount: number) => void;
-}
-
-const VideoDetectionOverlay: React.FC<VideoOverlayProps> = ({
-  videoSrc,
-  onHeadcountChange,
-}) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [fastMovingCount, setFastMovingCount] = useState(0);
-  const [normalMovingCount, setNormalMovingCount] = useState(0);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas) return;
-
-    let rafId: number;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Pedestrian flow corridors
-    const humanCount = 18;
-    const humans = Array.from({ length: humanCount }).map((_, i) => {
-      const isFast = i < 4 || i === 9 || i === 15; // Fast speed humans
-      const lane = i % 3; // 3 walking lanes
-      const speed = isFast ? 2.4 + (i % 3) * 0.5 : 0.6 + (i % 4) * 0.2;
-      const dir = i % 2 === 0 ? 1 : -1;
-      const confidence = 87 + Math.floor(Math.random() * 11);
-      return {
-        id: `P-${100 + i}`,
-        x: 50 + (i * 45) % 650,
-        y: 120 + lane * 70 + (Math.sin(i) * 20),
-        vx: dir * speed,
-        vy: (Math.sin(i * 1.5) * 0.3),
-        isFast,
-        confidence,
-        boxW: isFast ? 36 : 30,
-        boxH: isFast ? 52 : 44,
-        history: [] as Array<{ x: number; y: number }>,
-      };
-    });
-
-    const resize = () => {
-      if (canvas.parentElement) {
-        canvas.width = canvas.parentElement.clientWidth;
-        canvas.height = canvas.parentElement.clientHeight;
-      }
-    };
-    resize();
-    window.addEventListener('resize', resize);
-
-    const render = () => {
-      const w = canvas.width || 600;
-      const h = canvas.height || 350;
-      ctx.clearRect(0, 0, w, h);
-
-      let fast = 0;
-      let normal = 0;
-
-      humans.forEach((person) => {
-        // Move along corridor
-        person.x += person.vx;
-        person.y += person.vy;
-
-        // Wrap smoothly around canvas edges
-        if (person.vx > 0 && person.x > w + 40) person.x = -40;
-        if (person.vx < 0 && person.x < -40) person.x = w + 40;
-        if (person.y < 60 || person.y > h - 60) person.vy *= -1;
-
-        if (person.isFast) fast++;
-        else normal++;
-
-        const bw = person.boxW;
-        const bh = person.boxH;
-        const bx = person.x - bw / 2;
-        const by = person.y - bh / 2;
-
-        if (person.isFast) {
-          // RED RECTANGLE — Fast moving / rapid surge detection
-          ctx.fillStyle = 'rgba(239, 68, 68, 0.10)';
-          ctx.fillRect(bx, by, bw, bh);
-
-          ctx.strokeStyle = '#ef4444';
-          ctx.lineWidth = 1.5;
-          ctx.strokeRect(bx, by, bw, bh);
-
-          // Corner bracket accents
-          const corner = 6;
-          ctx.strokeStyle = '#f87171';
-          ctx.lineWidth = 2;
-          // Top-left
-          ctx.beginPath();
-          ctx.moveTo(bx, by + corner); ctx.lineTo(bx, by); ctx.lineTo(bx + corner, by);
-          ctx.stroke();
-          // Top-right
-          ctx.beginPath();
-          ctx.moveTo(bx + bw - corner, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + corner);
-          ctx.stroke();
-          // Bottom-left
-          ctx.beginPath();
-          ctx.moveTo(bx, by + bh - corner); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + corner, by + bh);
-          ctx.stroke();
-          // Bottom-right
-          ctx.beginPath();
-          ctx.moveTo(bx + bw - corner, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - corner);
-          ctx.stroke();
-
-          // Header tag bar
-          ctx.fillStyle = '#ef4444';
-          ctx.fillRect(bx, by - 14, bw + 18, 14);
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '600 8.5px JetBrains Mono, monospace';
-          ctx.fillText(`ANOMALY ${person.confidence}%`, bx + 2, by - 3);
-
-        } else {
-          // GREEN RECTANGLE — Normal pedestrian detection
-          ctx.fillStyle = 'rgba(16, 185, 129, 0.08)';
-          ctx.fillRect(bx, by, bw, bh);
-
-          ctx.strokeStyle = '#10b981';
-          ctx.lineWidth = 1.2;
-          ctx.strokeRect(bx, by, bw, bh);
-
-          // Corner bracket accents
-          const corner = 5;
-          ctx.strokeStyle = '#34d399';
-          ctx.lineWidth = 1.8;
-          // Top-left
-          ctx.beginPath();
-          ctx.moveTo(bx, by + corner); ctx.lineTo(bx, by); ctx.lineTo(bx + corner, by);
-          ctx.stroke();
-          // Top-right
-          ctx.beginPath();
-          ctx.moveTo(bx + bw - corner, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + corner);
-          ctx.stroke();
-          // Bottom-left
-          ctx.beginPath();
-          ctx.moveTo(bx, by + bh - corner); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + corner, by + bh);
-          ctx.stroke();
-          // Bottom-right
-          ctx.beginPath();
-          ctx.moveTo(bx + bw - corner, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - corner);
-          ctx.stroke();
-
-          // Header tag bar
-          ctx.fillStyle = '#10b981';
-          ctx.fillRect(bx, by - 13, bw + 4, 13);
-          ctx.fillStyle = '#062817';
-          ctx.font = '600 8.5px JetBrains Mono, monospace';
-          ctx.fillText(`${person.id} ${person.confidence}%`, bx + 2, by - 3);
-        }
-      });
-
-      // Frame reticle ticks
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.lineWidth = 1;
-      const m = 8;
-      const s = 14;
-      // TL
-      ctx.beginPath(); ctx.moveTo(m, m + s); ctx.lineTo(m, m); ctx.lineTo(m + s, m); ctx.stroke();
-      // TR
-      ctx.beginPath(); ctx.moveTo(w - m - s, m); ctx.lineTo(w - m, m); ctx.lineTo(w - m, m + s); ctx.stroke();
-      // BL
-      ctx.beginPath(); ctx.moveTo(m, h - m - s); ctx.lineTo(m, h - m); ctx.lineTo(m + s, h - m); ctx.stroke();
-      // BR
-      ctx.beginPath(); ctx.moveTo(w - m - s, h - m); ctx.lineTo(w - m, h - m); ctx.lineTo(w - m, h - m - s); ctx.stroke();
-
-      setFastMovingCount(fast);
-      setNormalMovingCount(normal);
-      if (onHeadcountChange) onHeadcountChange(humans.length, fast);
-
-      rafId = requestAnimationFrame(render);
-    };
-
-    render();
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      window.removeEventListener('resize', resize);
-    };
-  }, [onHeadcountChange]);
-
-  return (
-    <div className="relative w-full h-full bg-black">
-      <video
-        ref={videoRef}
-        src={videoSrc}
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="w-full h-full object-cover"
-      />
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full pointer-events-none"
-      />
-      <div className="absolute top-2 left-2 flex items-center gap-1.5 z-10 font-mono text-[10px]">
-        <span className="px-2 py-0.5 rounded bg-white/95 border border-slate-200 text-slate-800 backdrop-blur-sm font-semibold shadow-sm">
-          TRACKED: {normalMovingCount + fastMovingCount}
-        </span>
-        {fastMovingCount > 0 ? (
-          <span className="px-2 py-0.5 rounded bg-red-600 text-white font-semibold shadow-sm">
-            SURGE RISK: {fastMovingCount}
-          </span>
-        ) : (
-          <span className="px-2 py-0.5 rounded bg-emerald-700 text-white font-semibold shadow-sm">
-            FLOW STABLE
-          </span>
-        )}
-      </div>
-    </div>
-  );
 };
 
 const FlowArrow: React.FC<{ degrees: number; density: DensityLevel }> = ({
@@ -408,7 +48,7 @@ const FlowArrow: React.FC<{ degrees: number; density: DensityLevel }> = ({
         ? '#f59e0b'
         : density === 'moderate'
           ? '#fbbf24'
-          : '#22d3ee';
+          : '#2563eb';
   return (
     <div className="inline-flex items-center gap-1.5">
       <div
@@ -423,6 +63,59 @@ const FlowArrow: React.FC<{ degrees: number; density: DensityLevel }> = ({
         </svg>
       </div>
       <span className="mono text-xs text-text-secondary">{degrees}°</span>
+    </div>
+  );
+};
+
+interface VideoFeedViewProps {
+  videoSrc?: string;
+  cameraId: string;
+}
+
+const VideoFeedView: React.FC<VideoFeedViewProps> = ({ videoSrc, cameraId }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  return (
+    <div className="relative w-full h-full bg-black">
+      {videoSrc ? (
+        <video
+          ref={videoRef}
+          src={videoSrc}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-950 text-slate-400 font-mono text-xs gap-2">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="m22 8-5 4 5 4V8z" />
+            <rect x="2" y="6" width="15" height="12" rx="2" />
+          </svg>
+          <span>STANDBY · {cameraId.toUpperCase()} WAITING FOR RTSP STREAM</span>
+        </div>
+      )}
+
+      {/* Surveillance Corner Reticles */}
+      <div className="absolute inset-0 pointer-events-none p-2 flex flex-col justify-between">
+        <div className="flex justify-between items-start">
+          <div className="w-3 h-3 border-t-2 border-l-2 border-white/40" />
+          <div className="w-3 h-3 border-t-2 border-r-2 border-white/40" />
+        </div>
+        <div className="flex justify-between items-end">
+          <div className="w-3 h-3 border-b-2 border-l-2 border-white/40" />
+          <div className="w-3 h-3 border-b-2 border-r-2 border-white/40" />
+        </div>
+      </div>
+
+      {/* Optical Feed Active Watermark */}
+      <div className="absolute top-2 left-2 flex items-center gap-1.5 z-10 font-mono text-[10px]">
+        <span className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-black/60 border border-white/20 text-white/90 backdrop-blur-sm font-semibold">
+          <span className="w-1.5 h-1.5 rounded-full bg-safe animate-pulse" />
+          OPTICAL FEED ONLINE
+        </span>
+      </div>
     </div>
   );
 };
@@ -464,7 +157,7 @@ const CameraPanel: React.FC<CameraPanelProps> = ({
               {zoneName}
             </div>
             <div className="mono text-[9px] text-text-muted uppercase tracking-wider">
-              {cameraId.toUpperCase()} · RTSP LIVE STREAM
+              {cameraId.toUpperCase()} · RTSP SURVEILLANCE FEED
             </div>
           </div>
         </div>
@@ -475,14 +168,7 @@ const CameraPanel: React.FC<CameraPanelProps> = ({
       </div>
 
       <div className="relative aspect-[16/9] overflow-hidden bg-black">
-        {videoSrc ? (
-          <VideoDetectionOverlay videoSrc={videoSrc} />
-        ) : (
-          <>
-            <SceneBackdrop cameraId={cameraId} />
-            <TrackedDots density={density} seed={cameraId === 'cam-001' ? 1 : 7} />
-          </>
-        )}
+        <VideoFeedView videoSrc={videoSrc} cameraId={cameraId} />
 
         <div className="absolute top-2 right-2 z-10">
           <span
