@@ -1,0 +1,10 @@
+# SafeCrowd Backend Requirements
+ultralytics>=8.3.0
+torch
+torchvision
+opencv-python
+fastapi
+uvicorn[standard]
+websockets
+pydantic
+numpy

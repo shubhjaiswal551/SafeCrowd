@@ -29,3 +29,10 @@ dist-ssr
 *.sw?
 .vercel
 .env*
+
+# Python & ML
+backend/venv/
+backend/__pycache__/
+*.pt
+*.onnx
+runs/
