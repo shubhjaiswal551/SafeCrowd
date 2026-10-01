@@ -2,12 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: light;
+}
+
 @layer base {
+  html {
+    color-scheme: light;
+    background-color: #f8fafc;
+  }
+
   html,
   body,
   #root {
     height: 100%;
     margin: 0;
+    background-color: #f8fafc;
+    color: #0f172a;
+    color-scheme: light;
   }
 
   body {
