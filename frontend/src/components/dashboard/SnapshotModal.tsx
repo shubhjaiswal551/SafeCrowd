@@ -150,7 +150,7 @@ const SnapshotModal: React.FC<SnapshotModalProps> = ({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-text-secondary">
                 <div>Density: <span className="font-semibold text-text-primary">{alert.metrics.density} p/m²</span></div>
                 <div>Variance (σ²): <span className="font-semibold text-text-primary">{alert.metrics.velocity_variance}</span></div>
-                <div>Flow Vector: <span className="font-semibold text-text-primary">[{alert.metrics.flow_vector.join(', ')}]</span></div>
+                <div>Flow Vector: <span className="font-semibold text-text-primary">[{Array.isArray(alert.metrics.flow_vector) ? alert.metrics.flow_vector.join(', ') : '0, 0'}]</span></div>
                 <div>Headcount: <span className="font-semibold text-text-primary">{alert.metrics.headcount}</span></div>
               </div>
             </div>

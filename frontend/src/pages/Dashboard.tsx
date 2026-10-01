@@ -68,20 +68,32 @@ const Dashboard: React.FC = () => {
         c.cameraId === ev.cameraId
           ? {
               ...c,
-              headcount: ev.headcount,
-              density: ev.density,
-              flowDirection: ev.flowDirection,
-              lastUpdated: ev.timestamp,
+              headcount: ev.headcount ?? c.headcount,
+              density: ev.density ?? c.density,
+              flowDirection: ev.flowDirection ?? c.flowDirection,
+              lastUpdated: ev.timestamp || new Date().toISOString(),
               lastUpdatedAgo: 0,
             }
           : c,
       ),
     );
 
-    if (ev.metrics?.heatmap) {
+    const rawHeatmap = (ev as any).heatmap || ev.metrics?.heatmap;
+    if (rawHeatmap && Array.isArray(rawHeatmap)) {
+      // Normalize heatmap grid: ensure numbers in 2D array
+      const parsedGrid: number[][] = rawHeatmap.map((row: any) => {
+        if (typeof row === 'string') {
+          return row.split(' ').map((n: string) => parseFloat(n) || 0);
+        }
+        if (Array.isArray(row)) {
+          return row.map((val: any) => (typeof val === 'number' ? val : parseFloat(val) || 0));
+        }
+        return [0, 0, 0, 0, 0];
+      });
+
       setHeatmaps((prev) =>
         prev.map((h) =>
-          h.cameraId === ev.cameraId ? { ...h, grid: ev.metrics!.heatmap! } : h,
+          h.cameraId === ev.cameraId ? { ...h, grid: parsedGrid } : h,
         ),
       );
     }
@@ -92,13 +104,23 @@ const Dashboard: React.FC = () => {
       // 30-second cooldown per camera to avoid flooding 10 alerts/sec
       if (now - lastFired > 30_000) {
         lastAlertTimestampRef.current[ev.cameraId] = now;
+        
+        // Convert numeric severity (1-5) to string ('info' | 'warning' | 'high' | 'critical')
+        let mappedSev: 'info' | 'warning' | 'high' | 'critical' = 'high';
+        const rawSev = (ev as any).severity;
+        if (typeof rawSev === 'number') {
+          mappedSev = rawSev >= 5 ? 'critical' : rawSev === 4 ? 'high' : rawSev === 3 ? 'warning' : 'info';
+        } else if (typeof rawSev === 'string') {
+          mappedSev = (rawSev as any);
+        }
+
         const newAlert: Alert = {
           id: `alt-${now.toString(36)}`,
           cameraId: ev.cameraId,
           zoneName: ev.zoneName,
           type: ev.anomalyType || 'Crowd Anomaly Detected',
-          severity: ev.severity || 'high',
-          timestamp: ev.timestamp,
+          severity: mappedSev,
+          timestamp: ev.timestamp || new Date().toISOString(),
           acknowledged: false,
           metrics: ev.metrics,
           snapshotUrl: '/12269404_2320_1080_30fps.mp4',
