@@ -1,75 +1,59 @@
-# React + TypeScript + Vite
+# SafeCrowd — Real-Time Crowd Anomaly Detection & Surveillance
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SafeCrowd is an end-to-end computer vision and real-time security monitoring platform engineered for high-density public venues, transit hubs, and commercial centers. It detects rapid crowd surges, bottlenecks, counter-flow movements, and erratic dispersal before they escalate into stampedes or security incidents.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Repository Structure
 
 ```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+SafeCrowd/
+├── backend/                  # Python Computer Vision & ML Pipeline
+│   ├── best.pt              # Trained YOLO detection model weights
+│   ├── best.onnx            # ONNX-optimized model export
+│   └── ...                  # Video inference & WebSocket pipeline
+│
+├── frontend/                 # Security Operations Center (SOC) Web Console
+│   ├── src/                 # React 19 + TypeScript + TailwindCSS
+│   │   ├── components/      # Tactical HUD, CameraPanels, Triage, Heatmap
+│   │   ├── context/         # Auth & Session state
+│   │   ├── pages/           # Dashboard, CameraFeeds, Alerts, IncidentLog
+│   │   └── lib/             # Firebase Auth & Web Audio alarm engine
+│   └── public/              # Optical video feeds & assets
+│
+└── README.md
 ```
+
+---
+
+## Frontend Setup & Execution
+
+1. Navigate to the `frontend` directory:
+   ```bash
+   cd frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Build for production:
+   ```bash
+   npm run build
+   ```
+
+---
+
+## Key Features
+
+- **Multi-Camera Tactical HUD**: 2x2 Matrix & Focus Feed views with real-time vector bounding boxes and telemetry.
+- **Dynamic Density Matrix**: 5×5 spatial concentration heatmap grid.
+- **Incident Alert Triage**: Audio alert engine with mute controls, priority categorization, and batch acknowledgement.
+- **Evidence Snapshot Inspection**: Forensic frame freeze modal with timestamped metadata and operator action dispatch.
+- **Cryptographic Audit Log**: Searchable incident table with CSV export for compliance reporting.

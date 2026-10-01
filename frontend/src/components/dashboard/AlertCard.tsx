@@ -13,7 +13,6 @@ const severityConfig: Record<
     label: string;
     chipClass: string;
     dotColor: string;
-    dotGlow: string;
     borderColor: string;
     bgAccent: string;
   }
@@ -22,33 +21,29 @@ const severityConfig: Record<
     label: 'INFO',
     chipClass: 'chip-safe',
     dotColor: 'bg-safe',
-    dotGlow: 'shadow-glow-safe',
-    borderColor: 'border-safe/20',
-    bgAccent: 'bg-safe/[0.02]',
+    borderColor: 'border-border',
+    bgAccent: 'bg-bg-card',
   },
   warning: {
     label: 'WARN',
     chipClass: 'chip-warn',
     dotColor: 'bg-warn',
-    dotGlow: 'shadow-glow-warn',
     borderColor: 'border-warn/30',
-    bgAccent: 'bg-warn/[0.03]',
+    bgAccent: 'bg-warn-bg/20',
   },
   high: {
     label: 'HIGH',
     chipClass: 'chip-danger',
     dotColor: 'bg-danger',
-    dotGlow: 'shadow-glow-danger',
     borderColor: 'border-danger/40',
-    bgAccent: 'bg-danger/[0.04]',
+    bgAccent: 'bg-danger-bg/20',
   },
   critical: {
     label: 'CRIT',
     chipClass: 'chip-critical',
-    dotColor: 'bg-critical animate-pulse',
-    dotGlow: 'shadow-glow-danger',
+    dotColor: 'bg-critical',
     borderColor: 'border-critical/50',
-    bgAccent: 'bg-critical/[0.06]',
+    bgAccent: 'bg-critical-bg/30',
   },
 };
 
@@ -98,12 +93,12 @@ const AlertCard: React.FC<AlertCardProps> = ({
 
   return (
     <article
-      className={`relative p-4 rounded-md border bg-bg-card ${cfg.borderColor} ${cfg.bgAccent} animate-slide-in`}
+      className={`relative p-3 rounded-md border ${cfg.borderColor} ${cfg.bgAccent} animate-fade-in`}
     >
-      <div className="flex items-start gap-3">
-        <div className={`mt-0.5 w-2.5 h-2.5 shrink-0 rounded-full ${cfg.dotColor} ${cfg.dotGlow}`} />
+      <div className="flex items-start gap-2.5">
+        <div className={`mt-1 w-2 h-2 shrink-0 rounded-full ${cfg.dotColor}`} />
 
-        <div className="min-w-0 flex-1 space-y-2">
+        <div className="min-w-0 flex-1 space-y-1.5">
           <div className="flex items-start gap-2 flex-wrap">
             <span
               className={`${cfg.chipClass} shrink-0`}
@@ -112,20 +107,20 @@ const AlertCard: React.FC<AlertCardProps> = ({
               <SeverityIcon severity={alert.severity} />
               {cfg.label}
             </span>
-            <span className="text-xs font-medium text-text-primary truncate min-w-0">
+            <span className="text-xs font-semibold text-text-primary truncate min-w-0">
               {alert.type}
             </span>
           </div>
 
-          <div className="flex items-center gap-3 text-[11px] text-text-muted">
-            <span className="inline-flex items-center gap-1.5">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <div className="flex items-center gap-3 text-[10px] text-text-muted font-mono">
+            <span className="inline-flex items-center gap-1">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M23 7 16 12l-5-3-8 6v2h18V7z" />
               </svg>
               <span className="truncate">{alert.zoneName}</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 mono">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <span className="inline-flex items-center gap-1">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 16 14" />
               </svg>
@@ -133,41 +128,40 @@ const AlertCard: React.FC<AlertCardProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-2 pt-1">
+          <div className="flex items-center gap-2 pt-0.5">
             <button
               type="button"
               onClick={() => onViewSnapshot?.(alert.id)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium
+              className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-medium
                          bg-bg-tertiary border border-border text-text-secondary
-                         hover:text-text-primary hover:border-border-strong transition-colors"
+                         hover:text-text-primary hover:border-text-secondary transition-colors"
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="18" height="18" rx="2" />
                 <circle cx="9" cy="9" r="2" />
                 <path d="m21 15-5-5L5 21" />
               </svg>
-              View Snapshot
+              Snapshot
             </button>
             {!alert.acknowledged && onAcknowledge && (
               <button
                 type="button"
                 onClick={() => onAcknowledge(alert.id)}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium
-                           bg-accent-bg border border-accent/40 text-accent
-                           hover:bg-accent hover:text-bg-primary transition-colors"
+                className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-medium
+                           bg-accent text-white hover:bg-accent-dark transition-colors"
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
                 Acknowledge
               </button>
             )}
             {alert.acknowledged && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium bg-safe-bg text-safe-light border border-safe/30">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono text-safe-light bg-safe-bg border border-safe/30">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                Acknowledged
+                ACKNOWLEDGED
               </span>
             )}
           </div>

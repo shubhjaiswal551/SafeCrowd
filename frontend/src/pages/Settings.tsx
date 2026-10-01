@@ -129,7 +129,7 @@ const Settings: React.FC = () => {
                 <span
                   className={`chip ${
                     profile?.twoFactorEnabled
-                      ? 'chip-safe shadow-glow-safe'
+                      ? 'chip-safe'
                       : 'bg-bg-tertiary text-text-muted border-border'
                   }`}
                 >
@@ -165,7 +165,7 @@ const Settings: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(true)}
-                    className="px-4 py-1.5 rounded-md text-xs font-medium btn-primary shadow-glow-accent"
+                    className="btn-primary"
                   >
                     Set Up Google Authenticator
                   </button>

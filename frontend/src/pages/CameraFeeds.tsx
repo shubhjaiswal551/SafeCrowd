@@ -3,7 +3,6 @@ import Sidebar from '../components/dashboard/Sidebar';
 import StatusBar from '../components/dashboard/StatusBar';
 import CameraPanel from '../components/dashboard/CameraPanel';
 import HeatmapGrid from '../components/dashboard/HeatmapGrid';
-import { useAuth } from '../context/AuthContext';
 import {
   startCrowdSimulator,
   stopCrowdSimulator,
@@ -15,13 +14,16 @@ import {
 } from '../mocks/crowdSimulator';
 import type { CameraState, CameraHeatmap, Alert } from '../types/crowdEvent';
 
+type LayoutMode = 'grid' | 'focus';
+
 const CameraFeeds: React.FC = () => {
-  const { } = useAuth();
   const [cameras, setCameras] = useState<CameraState[]>(() => getInitialCameras());
   const [heatmaps, setHeatmaps] = useState<CameraHeatmap[]>(() =>
     getInitialHeatmaps(),
   );
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [layout, setLayout] = useState<LayoutMode>('grid');
+  const [focusId, setFocusId] = useState<string>('cam-001');
 
   useEffect(() => {
     startCrowdSimulator();
@@ -67,6 +69,10 @@ const CameraFeeds: React.FC = () => {
 
   const unacknowledged = alerts.filter((a) => !a.acknowledged).length;
 
+  const displayedCameras = layout === 'focus'
+    ? cameras.filter((c) => c.cameraId === focusId)
+    : cameras;
+
   return (
     <div className="h-screen w-screen flex overflow-hidden bg-bg-primary">
       <Sidebar alertCount={unacknowledged} />
@@ -75,31 +81,70 @@ const CameraFeeds: React.FC = () => {
 
         <main className="flex-1 overflow-y-auto min-h-0">
           <div className="px-6 py-5 space-y-5">
-            <div className="flex items-end justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-border">
               <div>
-                <h1 className="text-xl font-semibold text-text-primary">
-                  Camera Feeds
-                </h1>
-                <p className="text-sm text-text-secondary mt-1">
-                  Live view across all monitored zones with density analytics.
+                <div className="flex items-center gap-2.5">
+                  <h1 className="text-base font-semibold text-text-primary uppercase tracking-wider font-mono">
+                    OPTICAL SURVEILLANCE MATRIX
+                  </h1>
+                  <span className="chip-safe font-mono">2 / 2 ONLINE</span>
+                </div>
+                <p className="text-xs text-text-muted mt-0.5 font-mono">
+                  Continuous RTSP optical surveillance feeds with real-time vector inference.
                 </p>
               </div>
+
+              {/* View Layout Controls */}
               <div className="flex items-center gap-2">
-                <span className="chip-safe">
-                  <span className="w-1.5 h-1.5 rounded-full bg-safe animate-pulse" />
-                  2 / 2 Online
-                </span>
+                <div className="flex items-center p-0.5 rounded bg-bg-secondary border border-border text-xs font-mono">
+                  <button
+                    type="button"
+                    onClick={() => setLayout('grid')}
+                    className={`px-2.5 py-1 rounded transition-colors ${
+                      layout === 'grid'
+                        ? 'bg-bg-tertiary text-text-primary font-semibold'
+                        : 'text-text-muted hover:text-text-secondary'
+                    }`}
+                  >
+                    MATRIX (2×2)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLayout('focus')}
+                    className={`px-2.5 py-1 rounded transition-colors ${
+                      layout === 'focus'
+                        ? 'bg-bg-tertiary text-text-primary font-semibold'
+                        : 'text-text-muted hover:text-text-secondary'
+                    }`}
+                  >
+                    FOCUS SINGLE
+                  </button>
+                </div>
+
+                {layout === 'focus' && (
+                  <select
+                    value={focusId}
+                    onChange={(e) => setFocusId(e.target.value)}
+                    className="input-field text-xs font-mono py-1 px-2 w-auto"
+                  >
+                    {cameras.map((c) => (
+                      <option key={c.cameraId} value={c.cameraId}>
+                        {c.zoneName} ({c.cameraId.toUpperCase()})
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              {cameras.map((cam) => {
+            <div className={`grid gap-5 ${layout === 'focus' ? 'grid-cols-1 max-w-4xl mx-auto' : 'grid-cols-1 lg:grid-cols-2'}`}>
+              {displayedCameras.map((cam) => {
                 const hm = heatmaps.find((h) => h.cameraId === cam.cameraId);
                 const hasActiveAnomaly = alerts.find(
                   (a) => !a.acknowledged && a.cameraId === cam.cameraId,
                 );
                 return (
-                  <div key={cam.cameraId} className="space-y-5">
+                  <div key={cam.cameraId} className="space-y-4">
                     <CameraPanel
                       cameraId={cam.cameraId}
                       zoneName={cam.zoneName}
@@ -118,8 +163,8 @@ const CameraFeeds: React.FC = () => {
                     />
                     {hm && (
                       <HeatmapGrid
-                        title={`${cam.zoneName} · Density Zone`}
-                        subtitle="Real-time concentration grid"
+                        title={`${cam.zoneName} · DENSITY MATRIX`}
+                        subtitle="Real-time 5×5 spatial concentration telemetry"
                         grid={hm.grid}
                       />
                     )}

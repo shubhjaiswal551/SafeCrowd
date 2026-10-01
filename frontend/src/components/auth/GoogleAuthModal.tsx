@@ -229,8 +229,8 @@ const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
         {/* Step 3: Success */}
         {step === 3 && (
           <div className="py-6 text-center space-y-4 animate-fade-in">
-            <div className="w-14 h-14 rounded-full bg-safe-bg border border-safe/40 text-safe mx-auto flex items-center justify-center shadow-glow-safe">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <div className="w-12 h-12 rounded-full bg-safe-bg border border-safe/40 text-safe mx-auto flex items-center justify-center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>

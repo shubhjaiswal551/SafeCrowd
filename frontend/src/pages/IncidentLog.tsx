@@ -110,6 +110,25 @@ const IncidentLog: React.FC = () => {
     return s;
   }, [incidents]);
 
+  const handleExportCsv = () => {
+    const headers = ['ID,Timestamp,Zone,AlertType,Severity,Status,Operator'];
+    const rows = filtered.map(
+      (i) =>
+        `"${i.id}","${i.timestamp}","${i.zoneName}","${i.alertType}","${i.severity}","${i.status}","${i.acknowledgedBy ?? ''}"`,
+    );
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers, ...rows].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute(
+      'download',
+      `safecrowd-incident-audit-${new Date().toISOString().slice(0, 10)}.csv`,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="h-screen w-screen flex overflow-hidden bg-bg-primary">
       <Sidebar alertCount={alerts} />
@@ -117,34 +136,49 @@ const IncidentLog: React.FC = () => {
         <StatusBar activeAlertCount={alerts} />
 
         <main className="flex-1 overflow-y-auto min-h-0">
-          <div className="px-6 py-5 space-y-5">
-            <div className="flex items-end justify-between">
+          <div className="px-6 py-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-border">
               <div>
-                <h1 className="text-xl font-semibold text-text-primary">
-                  Incident Log
+                <h1 className="text-base font-semibold text-text-primary uppercase tracking-wider font-mono">
+                  INCIDENT AUDIT LOG
                 </h1>
-                <p className="text-sm text-text-secondary mt-1">
-                  Complete history of anomaly events, acknowledgements and
-                  resolutions.
+                <p className="text-xs text-text-muted mt-0.5 font-mono">
+                  Cryptographically timestamped incident history, operator responses, and triage events.
                 </p>
               </div>
-              <div className="grid grid-cols-4 gap-3">
-                {[
-                  { k: 'critical', v: bySeverity.critical, cls: 'chip-critical' },
-                  { k: 'high', v: bySeverity.high, cls: 'chip-danger' },
-                  { k: 'warning', v: bySeverity.warning, cls: 'chip-warn' },
-                  { k: 'info', v: bySeverity.info, cls: 'chip-safe' },
-                ].map((s) => (
-                  <div
-                    key={s.k}
-                    className="card px-4 py-3 flex items-center gap-3 min-w-[120px]"
-                  >
-                    <span className={s.cls + ' uppercase'}>{s.k}</span>
-                    <span className="mono text-text-primary font-semibold text-lg">
-                      {s.v}
-                    </span>
-                  </div>
-                ))}
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleExportCsv}
+                  className="btn-secondary font-mono text-[11px] flex items-center gap-1.5"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  EXPORT CSV
+                </button>
+
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { k: 'CRIT', v: bySeverity.critical, cls: 'chip-critical' },
+                    { k: 'HIGH', v: bySeverity.high, cls: 'chip-danger' },
+                    { k: 'WARN', v: bySeverity.warning, cls: 'chip-warn' },
+                    { k: 'INFO', v: bySeverity.info, cls: 'chip-safe' },
+                  ].map((s) => (
+                    <div
+                      key={s.k}
+                      className="px-2.5 py-1 rounded bg-bg-card border border-border flex items-center gap-2 font-mono"
+                    >
+                      <span className={s.cls}>{s.k}</span>
+                      <span className="text-text-primary font-bold text-xs">
+                        {s.v}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 

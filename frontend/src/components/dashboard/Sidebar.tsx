@@ -65,29 +65,26 @@ const Sidebar: React.FC<SidebarProps> = ({ alertCount = 0 }) => {
   };
 
   return (
-    <aside className="w-64 shrink-0 h-full flex flex-col bg-bg-secondary/95 backdrop-blur-md border-r border-border-subtle shadow-xl">
-      <div className="px-5 py-5 border-b border-border-subtle">
+    <aside className="w-60 shrink-0 h-full flex flex-col bg-bg-secondary border-r border-border">
+      <div className="px-5 py-4 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="relative w-10 h-10 rounded-xl border border-accent/40 bg-accent-bg flex items-center justify-center shadow-glow-accent">
-            <svg width="22" height="22" viewBox="0 0 24 24" className="text-accent">
-              <path
-                fill="currentColor"
-                d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.35 10.56 7.27 11.29a1 1 0 0 0 1.46 0C13.65 20.56 20 15.25 20 10c0-4.42-3.58-8-8-8zm0 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"
-              />
+          <div className="w-8 h-8 rounded bg-accent/15 border border-accent/40 flex items-center justify-center text-accent">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.35 10.56 7.27 11.29a1 1 0 0 0 1.46 0C13.65 20.56 20 15.25 20 10c0-4.42-3.58-8-8-8zm0 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
             </svg>
           </div>
           <div className="flex flex-col leading-tight">
-            <span className="text-text-primary font-bold tracking-wide text-base font-sans">
+            <span className="text-text-primary font-semibold tracking-tight text-sm font-sans">
               SafeCrowd
             </span>
-            <span className="text-[9px] uppercase tracking-[0.22em] text-text-muted font-mono font-semibold">
-              Command Center
+            <span className="text-[9px] uppercase tracking-wider text-text-muted font-mono font-semibold">
+              Control Station
             </span>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-5 space-y-1.5">
+      <nav className="flex-1 px-2.5 py-4 space-y-1">
         {NAV_ITEMS.map((item) => {
           const active = isActive(item.to);
           const showBadge = item.to === '/alerts' && alertCount > 0;
@@ -95,21 +92,18 @@ const Sidebar: React.FC<SidebarProps> = ({ alertCount = 0 }) => {
             <NavLink
               key={item.to}
               to={item.to}
-              className={`relative flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-medium transition-colors ${
                 active
-                  ? 'bg-accent-bg text-accent border border-accent/40 shadow-glow-accent'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary/60 border border-transparent'
+                  ? 'bg-accent/10 text-white border border-accent/30 font-semibold'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary border border-transparent'
               }`}
             >
-              {active && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-accent" />
-              )}
               <span className={active ? 'text-accent' : 'text-text-muted'}>
                 {item.icon}
               </span>
-              <span className="flex-1 font-sans">{item.label}</span>
+              <span className="flex-1">{item.label}</span>
               {showBadge && (
-                <span className="min-w-[20px] h-[20px] px-1.5 rounded-full bg-danger text-[11px] font-bold text-white flex items-center justify-center shadow-glow-danger animate-pulse">
+                <span className="min-w-[18px] h-[18px] px-1 rounded bg-danger text-[10px] font-mono font-bold text-white flex items-center justify-center">
                   {alertCount > 99 ? '99+' : alertCount}
                 </span>
               )}
@@ -118,9 +112,9 @@ const Sidebar: React.FC<SidebarProps> = ({ alertCount = 0 }) => {
         })}
       </nav>
 
-      <div className="p-4 border-t border-border-subtle space-y-3 bg-bg-primary/40">
-        <div className="flex items-center gap-3 p-2.5 rounded-lg bg-bg-tertiary/40 border border-border-subtle">
-          <div className="w-9 h-9 rounded-full bg-bg-tertiary border border-accent/30 flex items-center justify-center overflow-hidden shrink-0">
+      <div className="p-3 border-t border-border space-y-2.5 bg-bg-card/50">
+        <div className="flex items-center gap-2.5 p-2 rounded bg-bg-tertiary border border-border">
+          <div className="w-7 h-7 rounded bg-bg-card border border-border flex items-center justify-center overflow-hidden shrink-0">
             {profile?.photoURL ? (
               <img
                 src={profile.photoURL}
@@ -128,16 +122,16 @@ const Sidebar: React.FC<SidebarProps> = ({ alertCount = 0 }) => {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-sm font-bold text-accent">
+              <span className="text-xs font-bold text-accent font-mono">
                 {profile?.displayName?.[0]?.toUpperCase() ?? 'O'}
               </span>
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-xs text-text-primary truncate font-semibold">
+            <div className="text-xs text-text-primary truncate font-medium">
               {profile?.displayName ?? 'Operator'}
             </div>
-            <div className="text-[10px] text-text-muted truncate capitalize mono">
+            <div className="text-[9px] text-text-muted truncate capitalize mono">
               {profile?.role ?? 'operator'}
             </div>
           </div>

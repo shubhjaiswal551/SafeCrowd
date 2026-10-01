@@ -260,18 +260,18 @@ const VideoDetectionOverlay: React.FC<VideoOverlayProps> = ({
         const by = person.y - bh / 2;
 
         if (person.isFast) {
-          // RED SQUARE BOUNDING BOX — Fast moving / runner detection
-          ctx.fillStyle = 'rgba(239, 68, 68, 0.15)';
+          // RED RECTANGLE — Fast moving / rapid surge detection
+          ctx.fillStyle = 'rgba(239, 68, 68, 0.10)';
           ctx.fillRect(bx, by, bw, bh);
 
           ctx.strokeStyle = '#ef4444';
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 1.5;
           ctx.strokeRect(bx, by, bw, bh);
 
           // Corner bracket accents
           const corner = 6;
           ctx.strokeStyle = '#f87171';
-          ctx.lineWidth = 3;
+          ctx.lineWidth = 2;
           // Top-left
           ctx.beginPath();
           ctx.moveTo(bx, by + corner); ctx.lineTo(bx, by); ctx.lineTo(bx + corner, by);
@@ -291,24 +291,24 @@ const VideoDetectionOverlay: React.FC<VideoOverlayProps> = ({
 
           // Header tag bar
           ctx.fillStyle = '#ef4444';
-          ctx.fillRect(bx, by - 16, bw + 14, 15);
+          ctx.fillRect(bx, by - 14, bw + 18, 14);
           ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 9px JetBrains Mono, monospace';
-          ctx.fillText(`⚡ FAST ${person.confidence}%`, bx + 3, by - 5);
+          ctx.font = '600 8.5px JetBrains Mono, monospace';
+          ctx.fillText(`ANOMALY ${person.confidence}%`, bx + 2, by - 3);
 
         } else {
-          // GREEN SQUARE BOUNDING BOX — Normal pedestrian detection
-          ctx.fillStyle = 'rgba(34, 197, 94, 0.12)';
+          // GREEN RECTANGLE — Normal pedestrian detection
+          ctx.fillStyle = 'rgba(16, 185, 129, 0.08)';
           ctx.fillRect(bx, by, bw, bh);
 
-          ctx.strokeStyle = '#22c55e';
-          ctx.lineWidth = 1.8;
+          ctx.strokeStyle = '#10b981';
+          ctx.lineWidth = 1.2;
           ctx.strokeRect(bx, by, bw, bh);
 
           // Corner bracket accents
           const corner = 5;
-          ctx.strokeStyle = '#4ade80';
-          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = '#34d399';
+          ctx.lineWidth = 1.8;
           // Top-left
           ctx.beginPath();
           ctx.moveTo(bx, by + corner); ctx.lineTo(bx, by); ctx.lineTo(bx + corner, by);
@@ -327,13 +327,27 @@ const VideoDetectionOverlay: React.FC<VideoOverlayProps> = ({
           ctx.stroke();
 
           // Header tag bar
-          ctx.fillStyle = '#22c55e';
-          ctx.fillRect(bx, by - 15, bw + 6, 14);
-          ctx.fillStyle = '#052e16';
-          ctx.font = 'bold 9px JetBrains Mono, monospace';
-          ctx.fillText(`${person.id} ${person.confidence}%`, bx + 3, by - 4);
+          ctx.fillStyle = '#10b981';
+          ctx.fillRect(bx, by - 13, bw + 4, 13);
+          ctx.fillStyle = '#062817';
+          ctx.font = '600 8.5px JetBrains Mono, monospace';
+          ctx.fillText(`${person.id} ${person.confidence}%`, bx + 2, by - 3);
         }
       });
+
+      // Frame reticle ticks
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.lineWidth = 1;
+      const m = 8;
+      const s = 14;
+      // TL
+      ctx.beginPath(); ctx.moveTo(m, m + s); ctx.lineTo(m, m); ctx.lineTo(m + s, m); ctx.stroke();
+      // TR
+      ctx.beginPath(); ctx.moveTo(w - m - s, m); ctx.lineTo(w - m, m); ctx.lineTo(w - m, m + s); ctx.stroke();
+      // BL
+      ctx.beginPath(); ctx.moveTo(m, h - m - s); ctx.lineTo(m, h - m); ctx.lineTo(m + s, h - m); ctx.stroke();
+      // BR
+      ctx.beginPath(); ctx.moveTo(w - m - s, h - m); ctx.lineTo(w - m, h - m); ctx.lineTo(w - m, h - m - s); ctx.stroke();
 
       setFastMovingCount(fast);
       setNormalMovingCount(normal);
@@ -351,7 +365,7 @@ const VideoDetectionOverlay: React.FC<VideoOverlayProps> = ({
   }, [onHeadcountChange]);
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full bg-black">
       <video
         ref={videoRef}
         src={videoSrc}
@@ -365,13 +379,19 @@ const VideoDetectionOverlay: React.FC<VideoOverlayProps> = ({
         ref={canvasRef}
         className="absolute inset-0 w-full h-full pointer-events-none"
       />
-      <div className="absolute top-2 left-2 flex items-center gap-2 z-10">
-        <span className="mono text-[10px] px-2 py-0.5 rounded bg-safe-bg/80 border border-safe/30 text-safe-light backdrop-blur-sm">
-          🟩 Normal Box: {normalMovingCount}
+      <div className="absolute top-2 left-2 flex items-center gap-1.5 z-10 font-mono text-[10px]">
+        <span className="px-2 py-0.5 rounded bg-bg-primary/90 border border-border text-text-primary backdrop-blur-sm">
+          TRACKED: {normalMovingCount + fastMovingCount}
         </span>
-        <span className="mono text-[10px] px-2 py-0.5 rounded bg-danger-bg/80 border border-danger/30 text-danger-light backdrop-blur-sm animate-pulse">
-          🟥 Fast Risk Box: {fastMovingCount}
-        </span>
+        {fastMovingCount > 0 ? (
+          <span className="px-2 py-0.5 rounded bg-danger-bg border border-danger/40 text-danger-light backdrop-blur-sm font-semibold">
+            SURGE RISK: {fastMovingCount}
+          </span>
+        ) : (
+          <span className="px-2 py-0.5 rounded bg-safe-bg border border-safe/30 text-safe-light backdrop-blur-sm">
+            FLOW STABLE
+          </span>
+        )}
       </div>
     </div>
   );
@@ -432,26 +452,29 @@ const CameraPanel: React.FC<CameraPanelProps> = ({
 
   return (
     <div
-      className={`card relative overflow-hidden transition-all duration-300 ${
-        anomaly ? `ring-2 ${dcfg.ring} shadow-glow-danger` : ''
+      className={`card relative overflow-hidden transition-colors duration-200 ${
+        anomaly ? 'border-danger/70 ring-1 ring-danger/40' : ''
       }`}
     >
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle bg-bg-secondary/40">
-        <div className="flex items-center gap-3 min-w-0">
-          <span className="w-2 h-2 rounded-full bg-danger animate-pulse" />
+      <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-border bg-bg-secondary">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className={`w-2 h-2 rounded-full ${anomaly ? 'bg-danger animate-pulse' : 'bg-safe'}`} />
           <div className="min-w-0">
-            <div className="text-sm font-medium text-text-primary truncate">
+            <div className="text-xs font-semibold text-text-primary truncate">
               {zoneName}
             </div>
-            <div className="mono text-[10px] text-text-muted uppercase tracking-wider">
-              {cameraId.toUpperCase()} · LIVE MP4 FEED
+            <div className="mono text-[9px] text-text-muted uppercase tracking-wider">
+              {cameraId.toUpperCase()} · RTSP LIVE STREAM
             </div>
           </div>
         </div>
-        <div className={dcfg.className}>{dcfg.label}</div>
+        <div className="flex items-center gap-2">
+          <span className="mono text-[10px] text-text-muted hidden sm:inline">1080P · 30FPS</span>
+          <div className={dcfg.className}>{dcfg.label}</div>
+        </div>
       </div>
 
-      <div className="relative aspect-[16/9] overflow-hidden">
+      <div className="relative aspect-[16/9] overflow-hidden bg-black">
         {videoSrc ? (
           <VideoDetectionOverlay videoSrc={videoSrc} />
         ) : (
@@ -460,69 +483,57 @@ const CameraPanel: React.FC<CameraPanelProps> = ({
             <TrackedDots density={density} seed={cameraId === 'cam-001' ? 1 : 7} />
           </>
         )}
-        <div
-          className="absolute inset-0 opacity-40 pointer-events-none"
-          style={{
-            backgroundImage:
-              'linear-gradient(rgba(45, 53, 72, 0.25) 1px, transparent 1px), linear-gradient(90deg, rgba(45, 53, 72, 0.25) 1px, transparent 1px)',
-            backgroundSize: '24px 24px',
-          }}
-        />
-        <div
-          className="absolute inset-0 pointer-events-none bg-scanline opacity-50"
-        />
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div
-            className="absolute left-0 right-0 h-8 opacity-40"
-            style={{
-              background:
-                'linear-gradient(180deg, transparent, rgba(34, 211, 238, 0.18), transparent)',
-              animation: 'scan 4.5s linear infinite',
-            }}
-          />
-        </div>
 
         <div className="absolute top-2 right-2 z-10">
-          <span className="mono text-[10px] px-2 py-0.5 rounded bg-danger-bg border border-danger/30 text-danger-light backdrop-blur-sm uppercase tracking-wider">
-            {anomaly ? 'ANOMALY' : 'AI AI-TRACKING'}
+          <span
+            className={`mono text-[9px] px-2 py-0.5 rounded uppercase tracking-wider font-semibold border backdrop-blur-sm ${
+              anomaly
+                ? 'bg-danger-bg border-danger/40 text-danger-light'
+                : 'bg-bg-primary/90 border-border text-text-secondary'
+            }`}
+          >
+            {anomaly ? 'ANOMALY DETECTED' : 'STREAM NORMAL'}
           </span>
         </div>
-        <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between z-10">
-          <div>
-            <div className="label-sm">Headcount</div>
+
+        <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between z-10 pointer-events-none">
+          <div className="bg-bg-primary/90 px-2.5 py-1.5 rounded border border-border">
+            <div className="label-sm text-[9px]">Headcount</div>
             <div
               ref={hcRef}
-              className={`mono text-3xl font-semibold leading-none ${
+              className={`mono text-2xl font-bold leading-none mt-0.5 ${
                 density === 'critical'
-                  ? 'text-danger-light text-shadow-glow-danger'
+                  ? 'text-danger-light'
                   : density === 'high'
                     ? 'text-warn-light'
-                    : 'text-safe-light text-shadow-glow-safe'
+                    : 'text-text-primary'
               }`}
             >
               {headcount.toLocaleString()}
             </div>
           </div>
-          <div className="text-right">
-            <div className="label-sm">Flow Dir</div>
-            <FlowArrow degrees={flowDirection} density={density} />
+          <div className="bg-bg-primary/90 px-2.5 py-1.5 rounded border border-border text-right">
+            <div className="label-sm text-[9px]">Vector Flow</div>
+            <div className="mt-0.5">
+              <FlowArrow degrees={flowDirection} density={density} />
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 py-3 border-t border-border-subtle flex items-center justify-between text-xs">
-        <div className="text-text-secondary truncate pr-3">{description}</div>
-        <div className="mono text-text-muted shrink-0">
+      <div className="px-3.5 py-2.5 border-t border-border flex items-center justify-between text-xs bg-bg-card">
+        <div className="text-text-secondary text-[11px] truncate pr-3">{description}</div>
+        <div className="mono text-[10px] text-text-muted shrink-0">
           {lastUpdatedAgo <= 0
-            ? 'just updated'
-            : `${lastUpdatedAgo}s ago`}
+            ? 'LIVE SYNC'
+            : `${lastUpdatedAgo}s AGO`}
         </div>
       </div>
 
       {anomaly && anomalyType && (
-        <div className="px-4 py-2.5 border-t border-danger/30 bg-danger-bg/70 flex items-center gap-2 animate-slide-in">
-          <span className="w-2 h-2 rounded-full bg-danger animate-pulse shadow-glow-danger shrink-0" />
-          <span className="text-xs font-medium text-danger-light truncate">
+        <div className="px-3.5 py-2 border-t border-danger/30 bg-danger-bg text-xs flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-danger shrink-0" />
+          <span className="font-mono text-[11px] font-semibold text-danger-light truncate">
             {anomalyType}
           </span>
         </div>

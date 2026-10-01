@@ -155,18 +155,18 @@ export const IncidentTable: React.FC<IncidentTableProps> = ({
   onResolve,
 }) => {
   return (
-    <div className="card overflow-hidden">
+    <div className="card overflow-hidden bg-bg-card border border-border">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
-            <tr className="border-b border-border-subtle bg-bg-secondary/50 text-left">
-              <th className="px-4 py-3 label-sm font-medium">Timestamp</th>
-              <th className="px-4 py-3 label-sm font-medium">Zone</th>
-              <th className="px-4 py-3 label-sm font-medium">Alert Type</th>
-              <th className="px-4 py-3 label-sm font-medium">Severity</th>
-              <th className="px-4 py-3 label-sm font-medium">Status</th>
-              <th className="px-4 py-3 label-sm font-medium">Operator</th>
-              <th className="px-4 py-3 label-sm font-medium text-right">
+            <tr className="border-b border-border bg-bg-secondary text-left font-mono">
+              <th className="px-3.5 py-2.5 text-[10px] uppercase text-text-muted font-semibold">Timestamp</th>
+              <th className="px-3.5 py-2.5 text-[10px] uppercase text-text-muted font-semibold">Zone</th>
+              <th className="px-3.5 py-2.5 text-[10px] uppercase text-text-muted font-semibold">Alert Type</th>
+              <th className="px-3.5 py-2.5 text-[10px] uppercase text-text-muted font-semibold">Severity</th>
+              <th className="px-3.5 py-2.5 text-[10px] uppercase text-text-muted font-semibold">Status</th>
+              <th className="px-3.5 py-2.5 text-[10px] uppercase text-text-muted font-semibold">Operator</th>
+              <th className="px-3.5 py-2.5 text-[10px] uppercase text-text-muted font-semibold text-right">
                 Actions
               </th>
             </tr>
@@ -176,48 +176,48 @@ export const IncidentTable: React.FC<IncidentTableProps> = ({
               <tr>
                 <td
                   colSpan={7}
-                  className="px-4 py-12 text-center text-text-muted text-xs"
+                  className="px-4 py-10 text-center text-text-muted font-mono text-xs"
                 >
-                  No incidents match the current filters.
+                  NO RECORDED INCIDENTS MATCH CRITERIA
                 </td>
               </tr>
             ) : (
               incidents.map((inc, idx) => (
                 <tr
                   key={inc.id}
-                  className={`border-b border-border-subtle/60 hover:bg-bg-tertiary/40 transition-colors ${
-                    idx % 2 === 1 ? 'bg-bg-tertiary/10' : ''
+                  className={`border-b border-border/50 hover:bg-bg-tertiary/50 transition-colors ${
+                    idx % 2 === 1 ? 'bg-bg-secondary/30' : ''
                   }`}
                 >
-                  <td className="px-4 py-3 mono text-[12px] text-text-secondary whitespace-nowrap">
+                  <td className="px-3.5 py-2 mono text-[11px] text-text-secondary whitespace-nowrap">
                     {new Date(inc.timestamp).toLocaleString()}
                   </td>
-                  <td className="px-4 py-3 text-text-primary font-medium whitespace-nowrap">
+                  <td className="px-3.5 py-2 text-text-primary font-medium whitespace-nowrap font-mono">
                     {inc.zoneName}
                   </td>
-                  <td className="px-4 py-3 text-text-secondary max-w-xs truncate">
+                  <td className="px-3.5 py-2 text-text-secondary max-w-xs truncate">
                     {inc.alertType}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3.5 py-2 font-mono">
                     <span className={severityChipClass(inc.severity)}>
                       {inc.severity.toUpperCase()}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3.5 py-2 font-mono">
                     <span className={statusChipClass(inc.status)}>
                       {inc.status.toUpperCase()}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-text-secondary text-xs whitespace-nowrap">
+                  <td className="px-3.5 py-2 text-text-secondary text-[11px] font-mono whitespace-nowrap">
                     {inc.acknowledgedBy ?? '—'}
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-1.5">
+                  <td className="px-3.5 py-2">
+                    <div className="flex items-center justify-end gap-1.5 font-mono">
                       {inc.status === 'open' && onAcknowledge && (
                         <button
                           type="button"
                           onClick={() => onAcknowledge(inc.id)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-medium bg-accent-bg border border-accent/40 text-accent hover:bg-accent hover:text-bg-primary transition-colors"
+                          className="px-2 py-0.5 rounded text-[10px] font-medium bg-accent text-white hover:bg-accent-dark transition-colors"
                         >
                           Acknowledge
                         </button>
@@ -228,7 +228,7 @@ export const IncidentTable: React.FC<IncidentTableProps> = ({
                           <button
                             type="button"
                             onClick={() => onResolve(inc.id)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-medium bg-safe-bg border border-safe/30 text-safe-light hover:bg-safe hover:text-bg-primary transition-colors"
+                            className="px-2 py-0.5 rounded text-[10px] font-medium bg-safe text-white hover:bg-safe-dark transition-colors"
                           >
                             Resolve
                           </button>

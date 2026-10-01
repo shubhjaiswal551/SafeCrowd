@@ -172,69 +172,61 @@ const Dashboard: React.FC = () => {
 
         <main className="flex-1 overflow-y-auto min-h-0">
           <div className="px-6 py-5 space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
               {[
                 {
                   label: 'People Tracked',
                   value: totalHeadcount.toLocaleString(),
-                  sub: 'across all zones',
-                  accent: 'text-accent',
-                  chipClass: 'chip bg-accent-bg border-accent/30 text-accent-light',
-                  chipText: 'LIVE',
+                  sub: 'TOTAL DETECTED IN ZONES',
+                  accent: 'text-text-primary',
+                  chipClass: 'chip bg-accent/15 border-accent/40 text-accent font-mono',
+                  chipText: 'LIVE SYNC',
                 },
                 {
                   label: 'Active Alerts',
                   value: String(unacknowledged),
-                  sub: incidents.length + ' logged today',
+                  sub: incidents.length + ' INCIDENTS LOGGED TODAY',
                   accent:
                     unacknowledged > 0
-                      ? 'text-danger-light text-shadow-glow-danger'
+                      ? 'text-danger-light'
                       : 'text-safe-light',
                   chipClass:
-                    unacknowledged > 0 ? 'chip-danger' : 'chip-safe',
+                    unacknowledged > 0 ? 'chip-danger font-mono' : 'chip-safe font-mono',
                   chipText: unacknowledged > 0 ? 'UNACK' : 'CLEAR',
                 },
                 {
                   label: 'Critical Density',
                   value: String(criticalCameras),
-                  sub: highCameras + ' zones at high density',
+                  sub: highCameras + ' HIGH DENSITY WARNINGS',
                   accent:
                     criticalCameras > 0 ? 'text-critical-light' : 'text-safe-light',
                   chipClass:
-                    criticalCameras > 0 ? 'chip-critical' : 'chip-safe',
-                  chipText: criticalCameras > 0 ? 'WATCH' : 'OK',
+                    criticalCameras > 0 ? 'chip-critical font-mono' : 'chip-safe font-mono',
+                  chipText: criticalCameras > 0 ? 'WATCH' : 'NOMINAL',
                 },
                 {
                   label: 'Cameras Online',
                   value: cameras.length + ' / ' + cameras.length,
-                  sub: 'pipeline nominal',
+                  sub: 'OPTICAL NODES ACTIVE',
                   accent: 'text-safe-light',
-                  chipClass: 'chip-safe',
-                  chipText: '100%',
+                  chipClass: 'chip-safe font-mono',
+                  chipText: '100% HEALTH',
                 },
               ].map((s) => (
                 <div
                   key={s.label}
-                  className="card p-4 flex flex-col gap-1 relative overflow-hidden"
+                  className="card p-3.5 flex flex-col justify-between bg-bg-card border border-border"
                 >
-                  <div
-                    className="absolute inset-0 opacity-40 pointer-events-none"
-                    style={{
-                      backgroundImage:
-                        'linear-gradient(rgba(45,53,72,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(45,53,72,0.2) 1px, transparent 1px)',
-                      backgroundSize: '12px 12px',
-                    }}
-                  />
-                  <div className="relative flex items-start justify-between">
-                    <span className="label-sm">{s.label}</span>
+                  <div className="flex items-start justify-between">
+                    <span className="label-sm text-[10px]">{s.label}</span>
                     <span className={s.chipClass}>{s.chipText}</span>
                   </div>
                   <div
-                    className={`relative mono text-2xl font-semibold ${s.accent}`}
+                    className={`mono text-2xl font-bold my-1 ${s.accent}`}
                   >
                     {s.value}
                   </div>
-                  <div className="relative text-[11px] text-text-muted">
+                  <div className="text-[10px] font-mono text-text-muted uppercase tracking-wider">
                     {s.sub}
                   </div>
                 </div>
@@ -294,73 +286,73 @@ const Dashboard: React.FC = () => {
                   )}
                 </div>
 
-                <div className="card p-4">
-                  <div className="flex items-center justify-between mb-3">
+                <div className="card p-3.5 bg-bg-card border border-border">
+                  <div className="flex items-center justify-between mb-3 px-1">
                     <div>
-                      <div className="text-sm font-medium text-text-primary">
-                        Headcount Trend
+                      <div className="text-xs font-semibold text-text-primary font-mono uppercase tracking-wider">
+                        Headcount Telemetry Trend
                       </div>
-                      <div className="text-[11px] text-text-muted mt-0.5">
-                        Rolling 3-minute window per camera
+                      <div className="text-[10px] text-text-muted mt-0.5 font-mono">
+                        Rolling 3-minute vector window per node
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 text-[11px] text-text-secondary">
+                    <div className="flex items-center gap-3 text-[10px] font-mono text-text-secondary">
                       <span className="inline-flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-sm bg-accent" />
+                        <span className="w-2 h-2 rounded-sm bg-accent" />
                         Main Entrance
                       </span>
                       <span className="inline-flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-sm bg-warn" />
+                        <span className="w-2 h-2 rounded-sm bg-warn" />
                         Central Courtyard
                       </span>
                     </div>
                   </div>
-                  <div className="h-56">
+                  <div className="h-52">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart
                         data={history}
-                        margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
+                        margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
                       >
                         <defs>
                           <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.4} />
-                            <stop offset="100%" stopColor="#22d3ee" stopOpacity={0} />
+                            <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.15} />
+                            <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
                           </linearGradient>
                           <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.4} />
+                            <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.15} />
                             <stop offset="100%" stopColor="#f59e0b" stopOpacity={0} />
                           </linearGradient>
                         </defs>
                         <CartesianGrid
-                          strokeDasharray="3 3"
-                          stroke="#242a38"
+                          strokeDasharray="2 2"
+                          stroke="#1c222c"
                           vertical={false}
                         />
                         <XAxis
                           dataKey="t"
-                          stroke="#5a6578"
-                          fontSize={11}
+                          stroke="#64748b"
+                          fontSize={10}
                           tickLine={false}
                           axisLine={false}
                           fontFamily="JetBrains Mono, ui-monospace, Consolas, monospace"
                         />
                         <YAxis
-                          stroke="#5a6578"
-                          fontSize={11}
+                          stroke="#64748b"
+                          fontSize={10}
                           tickLine={false}
                           axisLine={false}
                           fontFamily="JetBrains Mono, ui-monospace, Consolas, monospace"
                         />
                         <Tooltip
                           contentStyle={{
-                            background: '#161a23',
-                            border: '1px solid #2d3548',
-                            borderRadius: 6,
-                            fontSize: 12,
-                            color: '#e6e9f0',
+                            background: '#12161f',
+                            border: '1px solid #252d3a',
+                            borderRadius: 4,
+                            fontSize: 11,
+                            color: '#f1f5f9',
                           }}
                           labelStyle={{
-                            color: '#94a0b8',
+                            color: '#94a3b8',
                             fontFamily: 'JetBrains Mono, ui-monospace, Consolas, monospace',
                           }}
                           itemStyle={{
@@ -371,8 +363,8 @@ const Dashboard: React.FC = () => {
                           type="monotone"
                           dataKey="cam001"
                           name="Main Entrance"
-                          stroke="#22d3ee"
-                          strokeWidth={2}
+                          stroke="#3b82f6"
+                          strokeWidth={1.5}
                           fill="url(#g1)"
                         />
                         <Area
@@ -380,7 +372,7 @@ const Dashboard: React.FC = () => {
                           dataKey="cam002"
                           name="Central Courtyard"
                           stroke="#f59e0b"
-                          strokeWidth={2}
+                          strokeWidth={1.5}
                           fill="url(#g2)"
                         />
                       </AreaChart>

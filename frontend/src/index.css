@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #090a0e;
+    color: #f1f5f9;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #090a0e;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #252d3a;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #364052;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md
+           bg-accent text-white font-medium text-xs tracking-wide
+           hover:bg-accent-dark transition-colors duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md
+           bg-bg-tertiary border border-border text-text-primary font-medium text-xs
+           hover:bg-bg-card hover:border-border-strong transition-colors duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md
+           bg-danger text-white font-medium text-xs
+           hover:bg-danger-dark transition-colors duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2 rounded-md
+           bg-bg-tertiary border border-border
+           text-text-primary placeholder-text-muted text-xs
+           focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent
+           transition-colors duration-150;
+  }
+
+  .card {
+    @apply bg-bg-card border border-border rounded-lg shadow-card;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono tracking-tight font-medium border;
+  }
+
+  .chip-safe {
+    @apply chip bg-safe-bg text-safe-light border-safe/30;
+  }
+
+  .chip-warn {
+    @apply chip bg-warn-bg text-warn-light border-warn/30;
+  }
+
+  .chip-danger {
+    @apply chip bg-danger-bg text-danger-light border-danger/30;
+  }
+
+  .chip-critical {
+    @apply chip bg-critical-bg text-critical-light border-critical/40;
+  }
+
+  .mono {
+    font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .label-sm {
+    @apply text-[10px] uppercase tracking-wider text-text-muted font-mono font-semibold;
+  }
+}
+
+@layer utilities {
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}

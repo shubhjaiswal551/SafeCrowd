@@ -14,8 +14,10 @@ dist-ssr
 
 # Environment files
 .env
-.env.*
+.env.local
+.env.*.local
 !.env.example
+!frontend/.env.example
 
 # Editor directories and files
 .vscode/*
@@ -28,7 +30,6 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
-.env*
 
 # Python & ML
 backend/venv/
