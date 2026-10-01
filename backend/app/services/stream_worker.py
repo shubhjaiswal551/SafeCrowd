@@ -65,110 +65,145 @@ class StreamWorker:
                 dead.add(client)
         self.connected_clients.difference_update(dead)
 
-    async def run_pipeline_loop(self, video_path: str = "frontend/public/12269404_2320_1080_30fps.mp4"):
-        """Continuous background worker running inference on video stream."""
+    async def run_pipeline_loop(self):
+        """Continuous background worker running inference on both demo camera streams."""
         self._ensure_tracker()
-        cap = cv2.VideoCapture(video_path)
-        frame_idx = 0
+        
+        streams = [
+            {
+                "cameraId": "cam-001",
+                "zone_id": "zone-001",
+                "zoneName": "Main Entrance Gate",
+                "path": "frontend/public/12269404_2320_1080_30fps.mp4",
+                "area_sq_m": 50.0,
+            },
+            {
+                "cameraId": "cam-002",
+                "zone_id": "zone-002",
+                "zoneName": "Central Courtyard",
+                "path": "frontend/public/5287069-sd_960_540_30fps.mp4",
+                "area_sq_m": 70.0,
+            },
+        ]
 
-        logger.info(f"StreamWorker started processing: {video_path}")
+        caps = {s["cameraId"]: cv2.VideoCapture(s["path"]) for s in streams}
+        frame_indices = {s["cameraId"]: 0 for s in streams}
         self.is_running = True
+        logger.info("StreamWorker initialized multi-camera feeds for cam-001 and cam-002")
 
         while self.is_running:
             if not self.connected_clients:
                 await asyncio.sleep(0.5)
                 continue
 
-            ret, frame = cap.read()
-            if not ret:
-                cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                await asyncio.sleep(0.01)
-                continue
+            for stream in streams:
+                cam_key = stream["cameraId"]
+                cap = caps[cam_key]
 
-            frame_idx += 1
-            now_iso = datetime.utcnow().isoformat() + "Z"
-            now_ts = asyncio.get_event_loop().time()
+                ret, frame = cap.read()
+                if not ret:
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    continue
 
-            # Resize frame for optimal inference speed
-            h, w = frame.shape[:2]
-            frame_resized = cv2.resize(frame, (960, 540))
-            rh, rw = frame_resized.shape[:2]
+                frame_indices[cam_key] += 1
+                now_iso = datetime.utcnow().isoformat() + "Z"
+                now_ts = asyncio.get_event_loop().time()
 
-            trajectories, _ = self.tracker.track_frame(
-                frame_resized, frame_idx=frame_idx, timestamp=now_ts
-            )
+                # Optimal resolution for realtime YOLO inference
+                frame_resized = cv2.resize(frame, (960, 540))
+                rh, rw = frame_resized.shape[:2]
 
-            headcount = len(trajectories)
-            bboxes = [t["bbox"] for t in trajectories]
-            active_ids = {t["track_id"] for t in trajectories}
-            velocities: List[Tuple[float, float]] = []
+                trajectories, _ = self.tracker.track_frame(
+                    frame_resized, frame_idx=frame_indices[cam_key], timestamp=now_ts
+                )
 
-            for t in trajectories:
-                tid = t["track_id"]
-                cx, cy = t["center"]
-                if tid not in self.track_history:
-                    self.track_history[tid] = []
-                self.track_history[tid].append((cx, cy))
-                if len(self.track_history[tid]) > self.max_history:
-                    self.track_history[tid].pop(0)
+                headcount = len(trajectories)
+                bboxes = [t["bbox"] for t in trajectories]
+                active_ids = {t["track_id"] for t in trajectories}
+                velocities: List[Tuple[float, float]] = []
 
-                if len(self.track_history[tid]) >= 2:
-                    p_old = self.track_history[tid][0]
-                    p_new = self.track_history[tid][-1]
-                    dx = p_new[0] - p_old[0]
-                    dy = p_new[1] - p_old[1]
-                    velocities.append((dx, dy))
+                for t in trajectories:
+                    tid = f"{cam_key}_{t['track_id']}"
+                    cx, cy = t["center"]
+                    if tid not in self.track_history:
+                        self.track_history[tid] = []
+                    self.track_history[tid].append((cx, cy))
+                    if len(self.track_history[tid]) > self.max_history:
+                        self.track_history[tid].pop(0)
 
-            # Prune aged tracks
-            for tid in list(self.track_history.keys()):
-                if tid not in active_ids:
-                    self.track_history[tid].pop(0)
-                    if not self.track_history[tid]:
-                        del self.track_history[tid]
+                    if len(self.track_history[tid]) >= 2:
+                        p_old = self.track_history[tid][0]
+                        p_new = self.track_history[tid][-1]
+                        velocities.append((p_new[0] - p_old[0], p_new[1] - p_old[1]))
 
-            # Compute mathematical analytics metrics
-            density_val = compute_density(headcount, area_sq_m=50.0)
-            flow_vec = compute_flow_vector(velocities)
-            vel_variance = compute_velocity_variance(velocities)
-            turbulence = compute_flow_turbulence(velocities)
-            heatmap = compute_spatial_heatmap(bboxes, rw, rh, grid_size=5)
+                # Prune aged tracks
+                for tid in list(self.track_history.keys()):
+                    if tid.startswith(cam_key) and int(tid.split("_")[1]) not in active_ids:
+                        self.track_history[tid].pop(0)
+                        if not self.track_history[tid]:
+                            del self.track_history[tid]
 
-            speeds = [math.sqrt(v[0]**2 + v[1]**2) for v in velocities]
-            avg_speed = round(float(np.mean(speeds)), 2) if speeds else 0.0
+                density_val = compute_density(headcount, area_sq_m=stream["area_sq_m"])
+                flow_vec = compute_flow_vector(velocities)
+                vel_variance = compute_velocity_variance(velocities)
+                turbulence = compute_flow_turbulence(velocities)
+                heatmap = compute_spatial_heatmap(bboxes, rw, rh, grid_size=5)
 
-            # Evaluate PRD-compliant anomaly rules
-            is_anomaly, event_type, severity = detect_anomaly(
-                density=density_val,
-                avg_speed=avg_speed,
-                velocity_variance=vel_variance,
-                turbulence=turbulence,
-            )
+                speeds = [math.sqrt(v[0]**2 + v[1]**2) for v in velocities]
+                avg_speed = round(float(np.mean(speeds)), 2) if speeds else 0.0
 
-            # Phase 3 Temporal Debouncing: Condition must persist for at least 8 frames (~0.8s)
-            cam_key = "cam-001"
-            if is_anomaly and event_type:
-                self.anomaly_counter[cam_key] = self.anomaly_counter.get(cam_key, 0) + 1
-            else:
-                self.anomaly_counter[cam_key] = max(0, self.anomaly_counter.get(cam_key, 0) - 1)
+                is_anomaly, event_type, severity = detect_anomaly(
+                    density=density_val,
+                    avg_speed=avg_speed,
+                    velocity_variance=vel_variance,
+                    turbulence=turbulence,
+                )
 
-            # Verified anomaly if sustained
-            verified_anomaly = self.anomaly_counter.get(cam_key, 0) >= 8
+                # Debouncing: 8 sustained frames
+                if is_anomaly and event_type:
+                    self.anomaly_counter[cam_key] = self.anomaly_counter.get(cam_key, 0) + 1
+                else:
+                    self.anomaly_counter[cam_key] = max(0, self.anomaly_counter.get(cam_key, 0) - 1)
 
-            # Auto-record into incident log if verified and cooldown (30s) expired
-            last_logged = self.last_incident_time.get(cam_key, 0.0)
-            cur_time = asyncio.get_event_loop().time()
-            if verified_anomaly and event_type and (cur_time - last_logged > 30.0):
-                self.last_incident_time[cam_key] = cur_time
-                new_inc_id = f"inc-{int(cur_time)}"
-                INCIDENTS_DB[new_inc_id] = {
-                    "id": new_inc_id,
+                verified_anomaly = self.anomaly_counter.get(cam_key, 0) >= 8
+
+                # Cooldown recording (30s)
+                last_logged = self.last_incident_time.get(cam_key, 0.0)
+                cur_time = asyncio.get_event_loop().time()
+                if verified_anomaly and event_type and (cur_time - last_logged > 30.0):
+                    self.last_incident_time[cam_key] = cur_time
+                    new_inc_id = f"inc-{int(cur_time)}"
+                    INCIDENTS_DB[new_inc_id] = {
+                        "id": new_inc_id,
+                        "camera_id": cam_key,
+                        "zone_id": stream["zone_id"],
+                        "event_type": event_type,
+                        "severity": severity or 3,
+                        "detected_at": now_iso,
+                        "snapshot_url": f"/{stream['path'].split('/')[-1]}",
+                        "metrics_json": {
+                            "density": density_val,
+                            "flow_vector": list(flow_vec),
+                            "velocity_variance": vel_variance,
+                            "headcount": headcount,
+                            "avg_speed": avg_speed,
+                            "heatmap": heatmap,
+                        },
+                        "acknowledged_by": None,
+                        "acknowledged_at": None,
+                        "resolved": False,
+                        "resolved_at": None,
+                        "notes": None,
+                    }
+                    logger.warning(f"🚨 [Phase 3 Alert Engine] New incident logged: {new_inc_id} on {cam_key} ({event_type})")
+
+                payload = {
                     "camera_id": cam_key,
-                    "zone_id": "zone-001",
-                    "event_type": event_type,
-                    "severity": severity or 3,
+                    "zone_id": stream["zone_id"],
+                    "event_type": event_type or "normal",
+                    "severity": severity or 1,
                     "detected_at": now_iso,
-                    "snapshot_url": "/12269404_2320_1080_30fps.mp4",
-                    "metrics_json": {
+                    "metrics": {
                         "density": density_val,
                         "flow_vector": list(flow_vec),
                         "velocity_variance": vel_variance,
@@ -176,44 +211,21 @@ class StreamWorker:
                         "avg_speed": avg_speed,
                         "heatmap": heatmap,
                     },
-                    "acknowledged_by": None,
-                    "acknowledged_at": None,
-                    "resolved": False,
-                    "resolved_at": None,
-                    "notes": None,
-                }
-                logger.warning(f"🚨 [Phase 3 Alert Engine] New incident logged: {new_inc_id} ({event_type}, Severity {severity})")
-
-            # Build standardized payload matching schema.md (with compatibility attributes)
-            payload = {
-                "camera_id": "cam-001",
-                "zone_id": "zone-001",
-                "event_type": event_type or "normal",
-                "severity": severity or 1,
-                "detected_at": now_iso,
-                "metrics": {
-                    "density": density_val,
-                    "flow_vector": list(flow_vec),
-                    "velocity_variance": vel_variance,
+                    "snapshot_url": f"/{stream['path'].split('/')[-1]}",
+                    "cameraId": cam_key,
+                    "zoneName": stream["zoneName"],
                     "headcount": headcount,
-                    "avg_speed": avg_speed,
+                    "density": "critical" if density_val >= 5.0 else "high" if density_val >= 3.0 else "moderate" if density_val >= 1.5 else "low",
+                    "flowDirection": round((math.degrees(math.atan2(flow_vec[1], flow_vec[0])) + 360) % 360, 1) if (flow_vec[0] or flow_vec[1]) else 0.0,
+                    "avgSpeed": avg_speed,
                     "heatmap": heatmap,
-                },
-                "snapshot_url": "/12269404_2320_1080_30fps.mp4",
-                # Convenience camelCase mappings for dashboard
-                "cameraId": "cam-001",
-                "zoneName": "Main Entrance Gate",
-                "headcount": headcount,
-                "density": "critical" if density_val >= 5.0 else "high" if density_val >= 3.0 else "moderate" if density_val >= 1.5 else "low",
-                "flowDirection": round((math.degrees(math.atan2(flow_vec[1], flow_vec[0])) + 360) % 360, 1) if (flow_vec[0] or flow_vec[1]) else 0.0,
-                "avgSpeed": avg_speed,
-                "heatmap": heatmap,
-                "anomaly": verified_anomaly,
-                "anomalyType": event_type if verified_anomaly else None,
-                "timestamp": now_iso,
-            }
+                    "anomaly": verified_anomaly,
+                    "anomalyType": event_type if verified_anomaly else None,
+                    "timestamp": now_iso,
+                }
 
-            await self.broadcast_payload(payload)
-            await asyncio.sleep(0.1)  # 10 fps telemetry broadcast
+                await self.broadcast_payload(payload)
+
+            await asyncio.sleep(0.08)
 
 stream_worker = StreamWorker()
