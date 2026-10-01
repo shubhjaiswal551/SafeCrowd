@@ -380,15 +380,15 @@ const VideoDetectionOverlay: React.FC<VideoOverlayProps> = ({
         className="absolute inset-0 w-full h-full pointer-events-none"
       />
       <div className="absolute top-2 left-2 flex items-center gap-1.5 z-10 font-mono text-[10px]">
-        <span className="px-2 py-0.5 rounded bg-bg-primary/90 border border-border text-text-primary backdrop-blur-sm">
+        <span className="px-2 py-0.5 rounded bg-white/95 border border-slate-200 text-slate-800 backdrop-blur-sm font-semibold shadow-sm">
           TRACKED: {normalMovingCount + fastMovingCount}
         </span>
         {fastMovingCount > 0 ? (
-          <span className="px-2 py-0.5 rounded bg-danger-bg border border-danger/40 text-danger-light backdrop-blur-sm font-semibold">
+          <span className="px-2 py-0.5 rounded bg-red-600 text-white font-semibold shadow-sm">
             SURGE RISK: {fastMovingCount}
           </span>
         ) : (
-          <span className="px-2 py-0.5 rounded bg-safe-bg border border-safe/30 text-safe-light backdrop-blur-sm">
+          <span className="px-2 py-0.5 rounded bg-emerald-700 text-white font-semibold shadow-sm">
             FLOW STABLE
           </span>
         )}

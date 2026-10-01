@@ -20,7 +20,7 @@ const SnapshotModal: React.FC<SnapshotModalProps> = ({
     : '/5287069-sd_960_540_30fps.mp4';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
       <div className="relative w-full max-w-3xl rounded-lg bg-bg-card border border-border shadow-2xl overflow-hidden flex flex-col">
         {/* Modal Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-bg-secondary">

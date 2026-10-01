@@ -325,7 +325,7 @@ const Dashboard: React.FC = () => {
                         </defs>
                         <CartesianGrid
                           strokeDasharray="2 2"
-                          stroke="#1c222c"
+                          stroke="#e2e8f0"
                           vertical={false}
                         />
                         <XAxis
@@ -345,14 +345,15 @@ const Dashboard: React.FC = () => {
                         />
                         <Tooltip
                           contentStyle={{
-                            background: '#12161f',
-                            border: '1px solid #252d3a',
-                            borderRadius: 4,
+                            background: '#ffffff',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: 6,
                             fontSize: 11,
-                            color: '#f1f5f9',
+                            color: '#0f172a',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.08)',
                           }}
                           labelStyle={{
-                            color: '#94a3b8',
+                            color: '#475569',
                             fontFamily: 'JetBrains Mono, ui-monospace, Consolas, monospace',
                           }}
                           itemStyle={{

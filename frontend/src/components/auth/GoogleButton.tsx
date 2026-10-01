@@ -64,9 +64,9 @@ const GoogleButton: React.FC<GoogleButtonProps> = ({
         type="button"
         onClick={handleGoogle}
         disabled={loading}
-        className="w-full inline-flex items-center justify-center gap-3 px-5 py-2.5 rounded-md
-                   bg-white text-gray-800 font-medium
-                   hover:bg-gray-100 active:bg-gray-200
+        className="w-full inline-flex items-center justify-center gap-3 px-4 py-2 rounded-md
+                   bg-white text-slate-700 font-medium text-xs border border-border-strong shadow-sm
+                   hover:bg-slate-50 active:bg-slate-100
                    transition-colors duration-150
                    disabled:opacity-50 disabled:cursor-not-allowed"
       >

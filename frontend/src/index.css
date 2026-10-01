@@ -12,8 +12,8 @@
 
   body {
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #090a0e;
-    color: #f1f5f9;
+    background-color: #f8fafc;
+    color: #0f172a;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -29,16 +29,16 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #090a0e;
+    background: #f8fafc;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #252d3a;
+    background: #cbd5e1;
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #364052;
+    background: #94a3b8;
   }
 }
 

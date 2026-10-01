@@ -94,7 +94,7 @@ const Sidebar: React.FC<SidebarProps> = ({ alertCount = 0 }) => {
               to={item.to}
               className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-medium transition-colors ${
                 active
-                  ? 'bg-accent/10 text-white border border-accent/30 font-semibold'
+                  ? 'bg-accent/10 text-accent border border-accent/30 font-semibold'
                   : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary border border-transparent'
               }`}
             >

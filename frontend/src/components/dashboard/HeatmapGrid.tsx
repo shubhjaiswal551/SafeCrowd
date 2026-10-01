@@ -10,11 +10,11 @@ interface HeatmapGridProps {
 function heatColor(v: number): string {
   const clamped = Math.max(0, Math.min(1, v));
   const stops: Array<[number, [number, number, number]]> = [
-    [0.0, [22, 27, 36]],    // Dark slate
-    [0.3, [16, 75, 55]],    // Muted dark emerald
-    [0.6, [180, 100, 15]],  // Tactical amber
-    [0.85, [220, 38, 38]],  // Crimson
-    [1.0, [239, 68, 68]],   // High red
+    [0.0, [241, 245, 249]],  // Crisp light slate-100
+    [0.25, [187, 247, 208]], // Soft mint emerald-100
+    [0.5, [74, 222, 128]],   // Emerald-400
+    [0.75, [251, 191, 36]],  // Amber-400
+    [1.0, [220, 38, 38]],    // Crimson-600
   ];
   for (let i = 0; i < stops.length - 1; i++) {
     const [t1, c1] = stops[i];
@@ -50,7 +50,7 @@ const HeatmapGrid: React.FC<HeatmapGridProps> = ({
 
       <div className="flex-1 p-3.5 flex flex-col gap-3">
         <div
-          className="grid gap-1 aspect-square w-full max-w-[280px] mx-auto rounded p-2 bg-bg-primary border border-border"
+          className="grid gap-1 aspect-square w-full max-w-[280px] mx-auto rounded p-2 bg-slate-50 border border-slate-200"
           style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
         >
           {grid.map((row, y) =>
@@ -59,7 +59,7 @@ const HeatmapGrid: React.FC<HeatmapGridProps> = ({
               return (
                 <div
                   key={`${x}-${y}`}
-                  className="rounded-sm transition-colors duration-300 border border-white/5"
+                  className="rounded-sm transition-colors duration-300 border border-slate-200"
                   title={`Sector (${x + 1}, ${y + 1}): ${(val * 100).toFixed(0)}% density`}
                   style={{
                     backgroundColor: color,
@@ -80,7 +80,7 @@ const HeatmapGrid: React.FC<HeatmapGridProps> = ({
             className="h-1.5 rounded border border-border overflow-hidden"
             style={{
               background:
-                'linear-gradient(90deg, rgb(22,27,36), rgb(16,75,55), rgb(180,100,15), rgb(220,38,38))',
+                'linear-gradient(90deg, rgb(241,245,249), rgb(187,247,208), rgb(74,222,128), rgb(251,191,36), rgb(220,38,38))',
             }}
           />
         </div>
