@@ -6,7 +6,7 @@ Handles camera list and admin configuration per AppFlow.md and schema.md.
 import uuid
 from typing import Dict, List
 from fastapi import APIRouter, Depends, HTTPException, status
-from ..models.schemas import CameraCreate, CameraResponse
+from ..models.schemas import CameraCreate, CameraUpdate, CameraResponse
 from .auth import get_current_user, require_admin
 
 router = APIRouter(prefix="/cameras", tags=["Cameras"])
@@ -53,6 +53,25 @@ async def get_camera(camera_id: str, user: Dict = Depends(get_current_user)):
     if camera_id not in CAMERAS_DB:
         raise HTTPException(status_code=404, detail="Camera not found")
     return CAMERAS_DB[camera_id]
+
+@router.patch("/{camera_id}", response_model=CameraResponse)
+async def update_camera(
+    camera_id: str,
+    camera_in: CameraUpdate,
+    admin_user: Dict = Depends(require_admin),
+):
+    if camera_id not in CAMERAS_DB:
+        raise HTTPException(status_code=404, detail="Camera not found")
+    cam = CAMERAS_DB[camera_id]
+    if camera_in.name is not None:
+        cam["name"] = camera_in.name
+    if camera_in.rtsp_url is not None:
+        cam["rtsp_url"] = camera_in.rtsp_url
+    if camera_in.location is not None:
+        cam["location"] = camera_in.location
+    if camera_in.is_active is not None:
+        cam["is_active"] = camera_in.is_active
+    return cam
 
 @router.delete("/{camera_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_camera(

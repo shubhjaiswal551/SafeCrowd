@@ -24,6 +24,7 @@ from ml.analytics.metrics import (
 )
 from ml.analytics.anomaly import detect_anomaly
 from ..routers.incidents import INCIDENTS_DB
+from ..routers.cameras import CAMERAS_DB
 
 logger = logging.getLogger("safecrowd.stream_worker")
 
@@ -74,19 +75,24 @@ class StreamWorker:
                 "cameraId": "cam-001",
                 "zone_id": "zone-001",
                 "zoneName": "Main Entrance Gate",
-                "path": "frontend/public/12269404_2320_1080_30fps.mp4",
+                "default_path": "frontend/public/12269404_2320_1080_30fps.mp4",
                 "area_sq_m": 50.0,
             },
             {
                 "cameraId": "cam-002",
                 "zone_id": "zone-002",
                 "zoneName": "Central Courtyard",
-                "path": "frontend/public/5287069-sd_960_540_30fps.mp4",
+                "default_path": "frontend/public/5287069-sd_960_540_30fps.mp4",
                 "area_sq_m": 70.0,
             },
         ]
 
-        caps = {s["cameraId"]: cv2.VideoCapture(s["path"]) for s in streams}
+        caps: Dict[str, cv2.VideoCapture] = {}
+        for s in streams:
+            cid = s["cameraId"]
+            url = CAMERAS_DB.get(cid, {}).get("rtsp_url", s["default_path"])
+            caps[cid] = cv2.VideoCapture(url)
+
         frame_indices = {s["cameraId"]: 0 for s in streams}
         self.is_running = True
         logger.info("StreamWorker initialized multi-camera feeds for cam-001 and cam-002")
@@ -180,7 +186,7 @@ class StreamWorker:
                         "event_type": event_type,
                         "severity": severity or 3,
                         "detected_at": now_iso,
-                        "snapshot_url": f"/{stream['path'].split('/')[-1]}",
+                        "snapshot_url": f"/{stream['default_path'].split('/')[-1]}",
                         "metrics_json": {
                             "density": density_val,
                             "flow_vector": list(flow_vec),
@@ -211,7 +217,7 @@ class StreamWorker:
                         "avg_speed": avg_speed,
                         "heatmap": heatmap,
                     },
-                    "snapshot_url": f"/{stream['path'].split('/')[-1]}",
+                    "snapshot_url": f"/{stream['default_path'].split('/')[-1]}",
                     "cameraId": cam_key,
                     "zoneName": stream["zoneName"],
                     "headcount": headcount,

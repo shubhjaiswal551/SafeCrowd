@@ -53,7 +53,7 @@ checked off (see `implementationPlan.md` for why the ordering matters).
 
 - [x] Dockerfiles per service (`backend`, `frontend` multi-stage build + Nginx proxy)
 - [x] `docker-compose.yml` wiring all services with GPU device pass-through
-- [ ] Real RTSP camera stream ingestion (replacing file-based dev input)
+- [x] Real RTSP camera stream ingestion (dynamic URL configuration via PATCH /cameras/{id})
 - [ ] Latency benchmark against 2–3s target
 - [x] Multi-camera concurrency test (cam-001 & cam-002 parallel streams active)
 - [ ] Security hardening pass
