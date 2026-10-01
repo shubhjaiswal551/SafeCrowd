@@ -23,6 +23,7 @@ from ml.analytics.metrics import (
     compute_flow_turbulence,
 )
 from ml.analytics.anomaly import detect_anomaly
+from ..routers.incidents import INCIDENTS_DB
 
 logger = logging.getLogger("safecrowd.stream_worker")
 
@@ -33,6 +34,8 @@ class StreamWorker:
         self.track_history: Dict[int, List[Tuple[float, float]]] = {}
         self.max_history = 15
         self.is_running = False
+        self.anomaly_counter: Dict[str, int] = {}
+        self.last_incident_time: Dict[str, float] = {}
 
     def add_client(self, ws: WebSocket):
         self.connected_clients.add(ws)
@@ -141,6 +144,46 @@ class StreamWorker:
                 turbulence=turbulence,
             )
 
+            # Phase 3 Temporal Debouncing: Condition must persist for at least 8 frames (~0.8s)
+            cam_key = "cam-001"
+            if is_anomaly and event_type:
+                self.anomaly_counter[cam_key] = self.anomaly_counter.get(cam_key, 0) + 1
+            else:
+                self.anomaly_counter[cam_key] = max(0, self.anomaly_counter.get(cam_key, 0) - 1)
+
+            # Verified anomaly if sustained
+            verified_anomaly = self.anomaly_counter.get(cam_key, 0) >= 8
+
+            # Auto-record into incident log if verified and cooldown (30s) expired
+            last_logged = self.last_incident_time.get(cam_key, 0.0)
+            cur_time = asyncio.get_event_loop().time()
+            if verified_anomaly and event_type and (cur_time - last_logged > 30.0):
+                self.last_incident_time[cam_key] = cur_time
+                new_inc_id = f"inc-{int(cur_time)}"
+                INCIDENTS_DB[new_inc_id] = {
+                    "id": new_inc_id,
+                    "camera_id": cam_key,
+                    "zone_id": "zone-001",
+                    "event_type": event_type,
+                    "severity": severity or 3,
+                    "detected_at": now_iso,
+                    "snapshot_url": "/12269404_2320_1080_30fps.mp4",
+                    "metrics_json": {
+                        "density": density_val,
+                        "flow_vector": list(flow_vec),
+                        "velocity_variance": vel_variance,
+                        "headcount": headcount,
+                        "avg_speed": avg_speed,
+                        "heatmap": heatmap,
+                    },
+                    "acknowledged_by": None,
+                    "acknowledged_at": None,
+                    "resolved": False,
+                    "resolved_at": None,
+                    "notes": None,
+                }
+                logger.warning(f"🚨 [Phase 3 Alert Engine] New incident logged: {new_inc_id} ({event_type}, Severity {severity})")
+
             # Build standardized payload matching schema.md (with compatibility attributes)
             payload = {
                 "camera_id": "cam-001",
@@ -165,8 +208,8 @@ class StreamWorker:
                 "flowDirection": round((math.degrees(math.atan2(flow_vec[1], flow_vec[0])) + 360) % 360, 1) if (flow_vec[0] or flow_vec[1]) else 0.0,
                 "avgSpeed": avg_speed,
                 "heatmap": heatmap,
-                "anomaly": is_anomaly,
-                "anomalyType": event_type,
+                "anomaly": verified_anomaly,
+                "anomalyType": event_type if verified_anomaly else None,
                 "timestamp": now_iso,
             }
 
