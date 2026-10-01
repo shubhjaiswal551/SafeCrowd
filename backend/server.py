@@ -42,7 +42,7 @@ async def websocket_crowd_feed(websocket: WebSocket):
         connected_clients.remove(websocket)
         print(f"[WebSocket] Client disconnected. Total clients: {len(connected_clients)}")
 
-async def broadcast_camera_feed(source_path: str = "public/12269404_2320_1080_30fps.mp4"):
+async def broadcast_camera_feed(source_path: str = "frontend/public/12269404_2320_1080_30fps.mp4"):
     """Background worker that runs inference and broadcasts metrics to dashboard clients."""
     cap = cv2.VideoCapture(source_path)
     
