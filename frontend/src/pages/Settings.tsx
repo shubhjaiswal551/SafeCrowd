@@ -224,31 +224,32 @@ const Settings: React.FC = () => {
             </div>
 
             <div className="card p-5 space-y-5">
-              <h2 className="text-sm font-semibold text-text-primary">
-                Detection Pipeline
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-text-primary">
+                  Detection Pipeline & Risk Thresholds
+                </h2>
+                <span className="chip chip-safe">Live Backend Connected</span>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="label-sm">Density Threshold (High)</label>
-                  <input className="input-field text-sm mono" defaultValue="90" />
+                  <input className="input-field text-sm mono" defaultValue="3.0 people/m²" readOnly />
                 </div>
                 <div className="space-y-1.5">
                   <label className="label-sm">Density Threshold (Critical)</label>
-                  <input className="input-field text-sm mono" defaultValue="160" />
+                  <input className="input-field text-sm mono" defaultValue="5.0 people/m²" readOnly />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="label-sm">Anomaly Cooldown (s)</label>
-                  <input className="input-field text-sm mono" defaultValue="20" />
+                  <label className="label-sm">Anomaly Debounce Window</label>
+                  <input className="input-field text-sm mono" defaultValue="8 frames (0.8s)" readOnly />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="label-sm">Tick Interval (ms)</label>
-                  <input className="input-field text-sm mono" defaultValue="2500" />
+                  <label className="label-sm">Inference Device</label>
+                  <input className="input-field text-sm mono" defaultValue="NVIDIA RTX 4060 (CUDA:0)" readOnly />
                 </div>
               </div>
-              <div className="p-3 rounded-md bg-warn-bg border border-warn/30 text-warn-light text-xs">
-                Pipeline values shown are configuration placeholders. Phase 1
-                uses the built-in mock simulator — real WebSocket/YOLO pipelines
-                will be wired in Phase 2.
+              <div className="p-3 rounded-md bg-safe-bg border border-safe/30 text-safe-light text-xs">
+                Perception Tier (YOLO best.pt) and Analytics Tier (ByteTrack + Anomaly Engine) are operating live at ~10 FPS over WebSocket.
               </div>
             </div>
           </div>

@@ -3,6 +3,7 @@ import Sidebar from '../components/dashboard/Sidebar';
 import StatusBar from '../components/dashboard/StatusBar';
 import CameraPanel from '../components/dashboard/CameraPanel';
 import HeatmapGrid from '../components/dashboard/HeatmapGrid';
+import { useCrowdStream } from '../hooks/useCrowdStream';
 import {
   startCrowdSimulator,
   stopCrowdSimulator,
@@ -12,7 +13,7 @@ import {
   getInitialCameras,
   getInitialHeatmaps,
 } from '../mocks/crowdSimulator';
-import type { CameraState, CameraHeatmap, Alert } from '../types/crowdEvent';
+import type { CameraState, CameraHeatmap, Alert, CrowdEvent } from '../types/crowdEvent';
 
 type LayoutMode = 'grid' | 'focus';
 
@@ -24,6 +25,33 @@ const CameraFeeds: React.FC = () => {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [layout, setLayout] = useState<LayoutMode>('grid');
   const [focusId, setFocusId] = useState<string>('cam-001');
+
+  const handleWsEvent = (ev: CrowdEvent) => {
+    setCameras((prev) =>
+      prev.map((c) =>
+        c.cameraId === ev.cameraId
+          ? {
+              ...c,
+              headcount: ev.headcount,
+              density: ev.density,
+              flowDirection: ev.flowDirection,
+              lastUpdated: ev.timestamp,
+              lastUpdatedAgo: 0,
+            }
+          : c,
+      ),
+    );
+    if ((ev as any).heatmap) {
+      setHeatmaps((prev) => {
+        const hm: CameraHeatmap = { cameraId: ev.cameraId, grid: (ev as any).heatmap };
+        const exists = prev.some((p) => p.cameraId === ev.cameraId);
+        if (exists) return prev.map((p) => (p.cameraId === ev.cameraId ? hm : p));
+        return [...prev, hm];
+      });
+    }
+  };
+
+  useCrowdStream(handleWsEvent);
 
   useEffect(() => {
     startCrowdSimulator();
