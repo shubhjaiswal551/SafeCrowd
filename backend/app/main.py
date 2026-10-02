@@ -41,6 +41,19 @@ async def lifespan(app: FastAPI):
     task.cancel()
     await alert_broker.close()
 
+import os
+
+# Environment-aware CORS configuration
+environment = os.getenv("ENVIRONMENT", "development")
+if environment == "production":
+    raw_origins = os.getenv("ALLOWED_ORIGINS", "")
+    allowed_origins = [o.strip() for o in raw_origins.split(",") if o.strip()] or [
+        "http://localhost:5173",
+        "http://localhost:3000",
+    ]
+else:
+    allowed_origins = ["*"]
+
 app = FastAPI(
     title="SafeCrowd Analytics & Alerting API",
     description="Real-Time Crowd Anomaly Detection, Triage, and Video Intelligence Service",
@@ -50,7 +63,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

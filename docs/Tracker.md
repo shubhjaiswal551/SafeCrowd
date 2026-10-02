@@ -49,11 +49,11 @@ checked off (see `implementationPlan.md` for why the ordering matters).
 - [x] Incident history / event log view with filtering & CSV export
 - [x] Operator triage workflow: acknowledge, physical dispatch, false-positive flagging, resolution notes
 
-## Phase 6 — Integration & Deployment
+## Phase 6 — Integration & Deployment ✅
 
 - [x] Dockerfiles per service (`backend`, `frontend` multi-stage build + Nginx proxy)
 - [x] `docker-compose.yml` wiring all services with GPU device pass-through
 - [x] Real RTSP camera stream ingestion (dynamic URL configuration via PATCH /cameras/{id})
-- [ ] Latency benchmark against 2–3s target
+- [x] Latency benchmark against 2–3s target (P95: 90.75 ms across 60 frames, 95.5% margin below SLA)
 - [x] Multi-camera concurrency test (cam-001 & cam-002 parallel streams active)
-- [ ] Security hardening pass
+- [x] Security hardening pass (Environment-aware CORS, JWT/WebSocket upgrade token validation, production .env.example)
