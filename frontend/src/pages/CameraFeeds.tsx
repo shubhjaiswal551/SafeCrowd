@@ -3,6 +3,7 @@ import Sidebar from '../components/dashboard/Sidebar';
 import StatusBar from '../components/dashboard/StatusBar';
 import CameraPanel from '../components/dashboard/CameraPanel';
 import HeatmapGrid from '../components/dashboard/HeatmapGrid';
+import ZoneCalibrationModal from '../components/dashboard/ZoneCalibrationModal';
 import { useCrowdStream } from '../hooks/useCrowdStream';
 import {
   startCrowdSimulator,
@@ -25,6 +26,7 @@ const CameraFeeds: React.FC = () => {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [layout, setLayout] = useState<LayoutMode>('grid');
   const [focusId, setFocusId] = useState<string>('cam-001');
+  const [calibratingCamera, setCalibratingCamera] = useState<CameraState | null>(null);
 
   const handleWsEvent = (ev: CrowdEvent) => {
     setCameras((prev) =>
@@ -188,6 +190,7 @@ const CameraFeeds: React.FC = () => {
                       }
                       anomaly={!!hasActiveAnomaly}
                       anomalyType={hasActiveAnomaly?.type}
+                      onCalibrateZone={() => setCalibratingCamera(cam)}
                     />
                     {hm && (
                       <HeatmapGrid
@@ -203,6 +206,28 @@ const CameraFeeds: React.FC = () => {
           </div>
         </main>
       </div>
+
+      {calibratingCamera && (
+        <ZoneCalibrationModal
+          cameraId={calibratingCamera.cameraId}
+          cameraName={calibratingCamera.zoneName}
+          videoSrc={
+            calibratingCamera.cameraId === 'cam-001'
+              ? '/12269404_2320_1080_30fps.mp4'
+              : '/5287069-sd_960_540_30fps.mp4'
+          }
+          onClose={() => setCalibratingCamera(null)}
+          onZoneCreated={(newZone) => {
+            setCameras((prev) =>
+              prev.map((c) =>
+                c.cameraId === newZone.camera_id
+                  ? { ...c, zoneName: newZone.name }
+                  : c,
+              ),
+            );
+          }}
+        />
+      )}
     </div>
   );
 };

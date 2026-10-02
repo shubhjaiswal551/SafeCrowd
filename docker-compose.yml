@@ -1,6 +1,41 @@
 version: '3.8'
 
 services:
+  # Database Service - PostgreSQL 15
+  postgres:
+    image: postgres:15-alpine
+    container_name: safecrowd-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: safecrowd
+      POSTGRES_PASSWORD: safecrowd_secure_password
+      POSTGRES_DB: safecrowd
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U safecrowd -d safecrowd"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Queue & Cache Service - Redis 7
+  redis:
+    image: redis:7-alpine
+    container_name: safecrowd-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Computer Vision & Real-time Analytics API Backend
   backend:
     build:
       context: .
@@ -12,8 +47,18 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - PORT=8000
+      - ENVIRONMENT=production
+      - DATABASE_URL=postgresql+asyncpg://safecrowd:safecrowd_secure_password@postgres:5432/safecrowd
+      - REDIS_URL=redis://redis:6379/0
+      - ALLOWED_ORIGINS=http://localhost,http://localhost:80,http://localhost:5173
     volumes:
       - ./frontend/public:/app/frontend/public:ro
+      - ./backend/snapshots:/app/backend/snapshots
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     deploy:
       resources:
         reservations:
@@ -22,6 +67,7 @@ services:
               count: all
               capabilities: [gpu]
 
+  # Dashboard Web Client (Nginx Reverse Proxy + React)
   frontend:
     build:
       context: .
@@ -32,3 +78,7 @@ services:
       - "80:80"
     depends_on:
       - backend
+
+volumes:
+  pgdata:
+  redisdata:

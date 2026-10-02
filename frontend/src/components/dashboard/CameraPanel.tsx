@@ -13,6 +13,7 @@ interface CameraPanelProps {
   anomalyType?: string;
   videoSrc?: string;
   onHeadcountChange?: (count: number) => void;
+  onCalibrateZone?: () => void;
 }
 
 const densityConfig: Record<
@@ -131,6 +132,7 @@ const CameraPanel: React.FC<CameraPanelProps> = ({
   anomaly,
   anomalyType,
   videoSrc,
+  onCalibrateZone,
 }) => {
   const dcfg = densityConfig[density];
   const hcRef = useRef<HTMLDivElement>(null);
@@ -162,7 +164,18 @@ const CameraPanel: React.FC<CameraPanelProps> = ({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="mono text-[10px] text-text-muted hidden sm:inline">1080P · 30FPS</span>
+          {onCalibrateZone && (
+            <button
+              type="button"
+              onClick={onCalibrateZone}
+              title="Calibrate custom polygon detection zone"
+              className="px-2 py-0.5 rounded text-[10px] font-mono border border-border bg-bg-tertiary hover:bg-bg-primary text-text-secondary hover:text-text-primary transition-colors flex items-center gap-1"
+            >
+              <span>📐</span>
+              <span className="hidden sm:inline">CALIBRATE ZONE</span>
+            </button>
+          )}
+          <span className="mono text-[10px] text-text-muted hidden md:inline">1080P · 30FPS</span>
           <div className={dcfg.className}>{dcfg.label}</div>
         </div>
       </div>
