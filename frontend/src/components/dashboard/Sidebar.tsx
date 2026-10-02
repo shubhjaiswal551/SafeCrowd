@@ -11,10 +11,10 @@ interface NavItem {
 const NavIcon = {
   Dashboard: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="7" height="9" rx="1.5" />
-      <rect x="14" y="3" width="7" height="5" rx="1.5" />
-      <rect x="14" y="12" width="7" height="9" rx="1.5" />
-      <rect x="3" y="16" width="7" height="5" rx="1.5" />
+      <rect x="3" y="3" width="7" height="9" rx="2" />
+      <rect x="14" y="3" width="7" height="5" rx="2" />
+      <rect x="14" y="12" width="7" height="9" rx="2" />
+      <rect x="3" y="16" width="7" height="5" rx="2" />
     </svg>
   ),
   Cameras: (
@@ -65,26 +65,28 @@ const Sidebar: React.FC<SidebarProps> = ({ alertCount = 0 }) => {
   };
 
   return (
-    <aside className="w-60 shrink-0 h-full flex flex-col bg-bg-secondary border-r border-border">
-      <div className="px-5 py-4 border-b border-border">
+    <aside className="w-64 shrink-0 h-full flex flex-col bg-white/75 backdrop-blur-xl border-r border-slate-200/70 shadow-[1px_0_4px_rgba(0,0,0,0.01)]">
+      {/* Brand Header */}
+      <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded bg-accent/15 border border-accent/40 flex items-center justify-center text-accent">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#0071e3] to-[#38bdf8] flex items-center justify-center text-white shadow-sm shadow-[#0071e3]/20">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.35 10.56 7.27 11.29a1 1 0 0 0 1.46 0C13.65 20.56 20 15.25 20 10c0-4.42-3.58-8-8-8zm0 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
             </svg>
           </div>
           <div className="flex flex-col leading-tight">
-            <span className="text-text-primary font-semibold tracking-tight text-sm font-sans">
+            <span className="text-slate-900 font-bold tracking-tight text-sm font-sans">
               SafeCrowd
             </span>
-            <span className="text-[9px] uppercase tracking-wider text-text-muted font-mono font-semibold">
+            <span className="text-[10px] text-slate-400 font-medium">
               Control Station
             </span>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 px-2.5 py-4 space-y-1">
+      {/* Navigation Links */}
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {NAV_ITEMS.map((item) => {
           const active = isActive(item.to);
           const showBadge = item.to === '/alerts' && alertCount > 0;
@@ -92,18 +94,18 @@ const Sidebar: React.FC<SidebarProps> = ({ alertCount = 0 }) => {
             <NavLink
               key={item.to}
               to={item.to}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-medium transition-colors ${
+              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all ${
                 active
-                  ? 'bg-accent/10 text-accent border border-accent/30 font-semibold'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary border border-transparent'
+                  ? 'bg-slate-200/70 text-[#0071e3] font-semibold shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
               }`}
             >
-              <span className={active ? 'text-accent' : 'text-text-muted'}>
+              <span className={`shrink-0 ${active ? 'text-[#0071e3]' : 'text-slate-400'}`}>
                 {item.icon}
               </span>
-              <span className="flex-1">{item.label}</span>
+              <span className="flex-1 truncate">{item.label}</span>
               {showBadge && (
-                <span className="min-w-[18px] h-[18px] px-1 rounded bg-danger text-[10px] font-mono font-bold text-white flex items-center justify-center">
+                <span className="min-w-[18px] h-[18px] px-1.5 rounded-full bg-[#ff3b30] text-[10px] font-bold text-white flex items-center justify-center shadow-sm">
                   {alertCount > 99 ? '99+' : alertCount}
                 </span>
               )}
@@ -112,9 +114,10 @@ const Sidebar: React.FC<SidebarProps> = ({ alertCount = 0 }) => {
         })}
       </nav>
 
-      <div className="p-3 border-t border-border space-y-2.5 bg-bg-card/50">
-        <div className="flex items-center gap-2.5 p-2 rounded bg-bg-tertiary border border-border">
-          <div className="w-7 h-7 rounded bg-bg-card border border-border flex items-center justify-center overflow-hidden shrink-0">
+      {/* User Info & Actions Footer */}
+      <div className="p-3.5 border-t border-slate-100 space-y-2 bg-slate-50/50 backdrop-blur-sm">
+        <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-slate-200/60 shadow-sm">
+          <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
             {profile?.photoURL ? (
               <img
                 src={profile.photoURL}
@@ -122,25 +125,26 @@ const Sidebar: React.FC<SidebarProps> = ({ alertCount = 0 }) => {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-xs font-bold text-accent font-mono">
+              <span className="text-xs font-bold text-[#0071e3]">
                 {profile?.displayName?.[0]?.toUpperCase() ?? 'O'}
               </span>
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-xs text-text-primary truncate font-medium">
+            <div className="text-xs text-slate-800 truncate font-semibold">
               {profile?.displayName ?? 'Operator'}
             </div>
-            <div className="text-[9px] text-text-muted truncate capitalize mono">
-              {profile?.role ?? 'operator'}
+            <div className="text-[10px] text-slate-400 truncate capitalize font-medium">
+              {profile?.role ?? 'operator'} Role
             </div>
           </div>
         </div>
+
         <button
           onClick={() => logout()}
-          className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg
-                     text-xs text-text-secondary hover:text-danger-light hover:bg-danger-bg
-                     border border-border-subtle hover:border-danger/30 transition-all duration-150 font-medium"
+          className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl
+                     text-xs text-slate-500 hover:text-[#ff3b30] hover:bg-red-50
+                     border border-transparent hover:border-red-200 transition-all font-medium active:scale-[0.98]"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

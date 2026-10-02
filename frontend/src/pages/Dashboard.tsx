@@ -276,63 +276,55 @@ const Dashboard: React.FC = () => {
 
         <main className="flex-1 overflow-y-auto min-h-0">
           <div className="px-6 py-5 space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 {
                   label: 'People Tracked',
                   value: totalHeadcount.toLocaleString(),
-                  sub: 'TOTAL DETECTED IN ZONES',
-                  accent: 'text-text-primary',
+                  sub: 'Total detected across zones',
+                  accent: 'text-slate-900',
                   chipClass: isWsConnected
-                    ? 'chip-safe font-mono'
-                    : 'chip bg-accent/15 border-accent/40 text-accent font-mono',
-                  chipText: isWsConnected ? 'BACKEND WS' : 'LIVE SYNC',
+                    ? 'chip-safe'
+                    : 'chip bg-blue-50 text-[#0071e3] border-blue-200/80',
+                  chipText: isWsConnected ? 'Live Backend' : 'Live Sync',
                 },
                 {
                   label: 'Active Alerts',
                   value: String(unacknowledged),
-                  sub: incidents.length + ' INCIDENTS LOGGED TODAY',
-                  accent:
-                    unacknowledged > 0
-                      ? 'text-danger-light'
-                      : 'text-safe-light',
-                  chipClass:
-                    unacknowledged > 0 ? 'chip-danger font-mono' : 'chip-safe font-mono',
-                  chipText: unacknowledged > 0 ? 'UNACK' : 'CLEAR',
+                  sub: `${incidents.length} incidents logged today`,
+                  accent: unacknowledged > 0 ? 'text-rose-600' : 'text-emerald-600',
+                  chipClass: unacknowledged > 0 ? 'chip-danger' : 'chip-safe',
+                  chipText: unacknowledged > 0 ? 'Action Required' : 'All Clear',
                 },
                 {
                   label: 'Critical Density',
                   value: String(criticalCameras),
-                  sub: highCameras + ' HIGH DENSITY WARNINGS',
-                  accent:
-                    criticalCameras > 0 ? 'text-critical-light' : 'text-safe-light',
-                  chipClass:
-                    criticalCameras > 0 ? 'chip-critical font-mono' : 'chip-safe font-mono',
-                  chipText: criticalCameras > 0 ? 'WATCH' : 'NOMINAL',
+                  sub: `${highCameras} high density warnings`,
+                  accent: criticalCameras > 0 ? 'text-rose-600' : 'text-emerald-600',
+                  chipClass: criticalCameras > 0 ? 'chip-critical' : 'chip-safe',
+                  chipText: criticalCameras > 0 ? 'Watch Zone' : 'Nominal',
                 },
                 {
                   label: 'Cameras Online',
-                  value: cameras.length + ' / ' + cameras.length,
-                  sub: 'OPTICAL NODES ACTIVE',
-                  accent: 'text-safe-light',
-                  chipClass: 'chip-safe font-mono',
-                  chipText: '100% HEALTH',
+                  value: `${cameras.length} / ${cameras.length}`,
+                  sub: 'Optical nodes transmitting',
+                  accent: 'text-emerald-600',
+                  chipClass: 'chip-safe',
+                  chipText: '100% Health',
                 },
               ].map((s) => (
                 <div
                   key={s.label}
-                  className="card p-3.5 flex flex-col justify-between bg-bg-card border border-border"
+                  className="card p-4 flex flex-col justify-between"
                 >
                   <div className="flex items-start justify-between">
-                    <span className="label-sm text-[10px]">{s.label}</span>
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{s.label}</span>
                     <span className={s.chipClass}>{s.chipText}</span>
                   </div>
-                  <div
-                    className={`mono text-2xl font-bold my-1 ${s.accent}`}
-                  >
+                  <div className={`font-sans text-3xl font-extrabold my-2 tracking-tight tabular-nums ${s.accent}`}>
                     {s.value}
                   </div>
-                  <div className="text-[10px] font-mono text-text-muted uppercase tracking-wider">
+                  <div className="text-[11px] text-slate-400 font-medium">
                     {s.sub}
                   </div>
                 </div>

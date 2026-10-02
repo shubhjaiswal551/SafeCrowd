@@ -13,26 +13,26 @@ interface AlertFeedProps {
 
 const EmptyState: React.FC = () => (
   <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-    <div className="w-10 h-10 rounded border border-border bg-bg-secondary flex items-center justify-center mb-3">
+    <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center mb-3 shadow-sm">
       <svg
-        width="20"
-        height="20"
+        width="22"
+        height="22"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="text-safe"
+        className="text-emerald-600"
       >
-        <path d="M20 6 9 17l-5-5" />
+        <polyline points="20 6 9 17 4 12" />
       </svg>
     </div>
-    <div className="text-xs font-semibold text-text-primary uppercase tracking-wider font-mono">
-      ALL MONITORED ZONES CLEAR
+    <div className="text-sm font-semibold text-slate-800 tracking-tight">
+      All Monitored Zones Clear
     </div>
-    <div className="text-[11px] text-text-muted mt-1 max-w-xs leading-relaxed">
-      Continuous vector surveillance active. Anomalies and surge thresholds will stream here automatically.
+    <div className="text-xs text-slate-400 mt-1 max-w-xs leading-relaxed font-medium">
+      Continuous optical surveillance active. Developing surges and crowd bottlenecks will appear here in real time.
     </div>
   </div>
 );
@@ -75,36 +75,36 @@ const AlertFeed: React.FC<AlertFeedProps> = ({
 
   return (
     <>
-      <div className="card flex flex-col h-full min-h-0 bg-bg-card border border-border">
-        <div className="px-4 py-2.5 border-b border-border flex items-center justify-between bg-bg-secondary">
+      <div className="card flex flex-col h-full min-h-0 overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-white/70 backdrop-blur-md">
           <div>
-            <div className="text-xs font-semibold text-text-primary uppercase tracking-wider font-mono">
-              ACTIVE INCIDENT STREAM
+            <div className="text-sm font-semibold text-slate-800 tracking-tight">
+              Active Incident Stream
             </div>
-            <div className="text-[10px] text-text-muted">
-              Live anomaly pipeline triage
+            <div className="text-xs text-slate-400 font-medium mt-0.5">
+              Real-time anomaly triage & alerts
             </div>
           </div>
-          <div className="flex items-center gap-1.5 font-mono text-[10px]">
+          <div className="flex items-center gap-1.5 text-xs">
             {criticalCount > 0 && (
-              <span className="chip-critical">
-                {criticalCount} CRIT
+              <span className="chip-critical font-medium text-[11px]">
+                {criticalCount} Critical
               </span>
             )}
             {unacknowledged > 0 && (
-              <span className="chip-danger">
-                {unacknowledged} UNACK
+              <span className="chip-danger font-medium text-[11px]">
+                {unacknowledged} Pending
               </span>
             )}
-            <span className="px-2 py-0.5 rounded bg-bg-tertiary border border-border text-text-muted">
-              TOTAL {alerts.length}
+            <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-medium text-[11px]">
+              {alerts.length} Total
             </span>
           </div>
         </div>
 
         <div
           ref={scrollerRef}
-          className="flex-1 overflow-y-auto p-2.5 space-y-2 min-h-0"
+          className="flex-1 overflow-y-auto p-3 space-y-2.5 min-h-0"
         >
           {alerts.length === 0 ? (
             <EmptyState />

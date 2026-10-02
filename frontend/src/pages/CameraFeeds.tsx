@@ -111,43 +111,43 @@ const CameraFeeds: React.FC = () => {
 
         <main className="flex-1 overflow-y-auto min-h-0">
           <div className="px-6 py-5 space-y-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-border">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/70">
               <div>
-                <div className="flex items-center gap-2.5">
-                  <h1 className="text-base font-semibold text-text-primary uppercase tracking-wider font-mono">
-                    OPTICAL SURVEILLANCE MATRIX
+                <div className="flex items-center gap-3">
+                  <h1 className="text-lg font-bold text-slate-900 tracking-tight">
+                    Optical Surveillance Matrix
                   </h1>
-                  <span className="chip-safe font-mono">2 / 2 ONLINE</span>
+                  <span className="chip-safe font-sans font-medium text-[11px]">2 / 2 Online</span>
                 </div>
-                <p className="text-xs text-text-muted mt-0.5 font-mono">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Continuous RTSP optical surveillance feeds with real-time vector inference.
                 </p>
               </div>
 
               {/* View Layout Controls */}
-              <div className="flex items-center gap-2">
-                <div className="flex items-center p-0.5 rounded bg-bg-secondary border border-border text-xs font-mono">
+              <div className="flex items-center gap-2.5">
+                <div className="mac-segmented">
                   <button
                     type="button"
                     onClick={() => setLayout('grid')}
-                    className={`px-2.5 py-1 rounded transition-colors ${
+                    className={`px-3 py-1.5 rounded-lg transition-all text-xs font-medium ${
                       layout === 'grid'
-                        ? 'bg-bg-tertiary text-text-primary font-semibold'
-                        : 'text-text-muted hover:text-text-secondary'
+                        ? 'mac-pill-active'
+                        : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    MATRIX (2×2)
+                    Matrix (2×2)
                   </button>
                   <button
                     type="button"
                     onClick={() => setLayout('focus')}
-                    className={`px-2.5 py-1 rounded transition-colors ${
+                    className={`px-3 py-1.5 rounded-lg transition-all text-xs font-medium ${
                       layout === 'focus'
-                        ? 'bg-bg-tertiary text-text-primary font-semibold'
-                        : 'text-text-muted hover:text-text-secondary'
+                        ? 'mac-pill-active'
+                        : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    FOCUS SINGLE
+                    Focus Single
                   </button>
                 </div>
 
@@ -155,7 +155,7 @@ const CameraFeeds: React.FC = () => {
                   <select
                     value={focusId}
                     onChange={(e) => setFocusId(e.target.value)}
-                    className="input-field text-xs font-mono py-1 px-2 w-auto"
+                    className="input-field text-xs py-1.5 px-3 w-auto rounded-xl"
                   >
                     {cameras.map((c) => (
                       <option key={c.cameraId} value={c.cameraId}>

@@ -59,32 +59,31 @@ const SnapshotModal: React.FC<SnapshotModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-3xl rounded-lg bg-bg-card border border-border shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/35 backdrop-blur-md animate-fade-in">
+      <div className="relative w-full max-w-3xl rounded-3xl bg-white/95 backdrop-blur-2xl border border-white/80 shadow-floating overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-bg-secondary shrink-0">
-          <div className="flex items-center gap-2.5">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                alert.severity === 'critical' || alert.severity === 'high'
-                  ? 'bg-danger'
-                  : 'bg-warn'
-              }`}
-            />
-            <div className="text-xs font-semibold text-text-primary font-mono uppercase tracking-wider">
-              EVIDENCE CAPTURE · {alert.id.toUpperCase()}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white/80 shrink-0">
+          <div className="flex items-center gap-3">
+            {/* macOS Window dots */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="w-3 h-3 rounded-full bg-rose-400" />
+              <span className="w-3 h-3 rounded-full bg-amber-400" />
+              <span className="w-3 h-3 rounded-full bg-emerald-400" />
+            </div>
+            <div className="text-sm font-semibold text-slate-800 tracking-tight">
+              Incident Evidence Preview · {alert.id.toUpperCase()}
             </div>
             {alert.numericSeverity && (
-              <span className="chip-critical font-mono text-[10px]">
-                LEVEL {alert.numericSeverity}/5
+              <span className="chip-critical font-medium text-[11px]">
+                Level {alert.numericSeverity} / 5
               </span>
             )}
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-tertiary transition-colors"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -92,9 +91,9 @@ const SnapshotModal: React.FC<SnapshotModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-5 space-y-4 overflow-y-auto">
+        <div className="p-6 space-y-4 overflow-y-auto">
           {/* Frozen / Active Evidence Media */}
-          <div className="relative aspect-[16/9] w-full rounded overflow-hidden bg-black border border-border">
+          <div className="relative aspect-[16/9] w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-200/80 shadow-sm">
             {videoSrc.match(/\.(jpeg|jpg|png|webp)($|\?)/i) ? (
               <img
                 src={videoSrc.startsWith('/snapshots/') ? `http://localhost:8000${videoSrc}` : videoSrc}
@@ -111,83 +110,83 @@ const SnapshotModal: React.FC<SnapshotModalProps> = ({
                 className="w-full h-full object-cover"
               />
             )}
-            <div className="absolute top-2 left-2 text-[10px] font-mono text-white/90 bg-black/70 px-2 py-0.5 rounded border border-white/10">
-              EVIDENCE CAPTURE · {new Date(alert.timestamp).toLocaleTimeString()} UTC
+            <div className="absolute top-3 left-3 text-[11px] font-sans font-medium text-white/95 bg-black/60 px-3 py-1 rounded-full border border-white/20 backdrop-blur-md">
+              Evidence Recording · {new Date(alert.timestamp).toLocaleTimeString()}
             </div>
-            <div className="absolute bottom-2 right-2 text-[10px] font-mono text-white/90 bg-black/70 px-2 py-0.5 rounded border border-white/10">
-              SENSOR: {alert.cameraId.toUpperCase()} [{alert.zoneName}]
+            <div className="absolute bottom-3 right-3 text-[11px] font-sans font-medium text-white/95 bg-black/60 px-3 py-1 rounded-full border border-white/20 backdrop-blur-md">
+              Sensor: {alert.cameraId.toUpperCase()} ({alert.zoneName})
             </div>
           </div>
 
           {actionSuccess && (
-            <div className="p-2.5 rounded bg-safe-bg border border-safe/30 text-safe-light text-xs font-mono">
+            <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium">
               ✓ {actionSuccess}
             </div>
           )}
 
           {/* Telemetry Details Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
-            <div className="p-2.5 rounded bg-bg-secondary border border-border">
-              <div className="text-[9px] text-text-muted uppercase">Incident Type</div>
-              <div className="font-semibold text-text-primary mt-0.5 truncate capitalize">{alert.type}</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div className="p-3 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+              <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Incident Type</div>
+              <div className="font-semibold text-slate-900 mt-1 truncate capitalize text-sm">{alert.type}</div>
             </div>
-            <div className="p-2.5 rounded bg-bg-secondary border border-border">
-              <div className="text-[9px] text-text-muted uppercase">Zone Location</div>
-              <div className="font-semibold text-text-primary mt-0.5 truncate">{alert.zoneName}</div>
+            <div className="p-3 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+              <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Zone Location</div>
+              <div className="font-semibold text-slate-900 mt-1 truncate text-sm">{alert.zoneName}</div>
             </div>
-            <div className="p-2.5 rounded bg-bg-secondary border border-border">
-              <div className="text-[9px] text-text-muted uppercase">Severity Level</div>
-              <div className="font-semibold text-danger-light mt-0.5 uppercase">
+            <div className="p-3 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+              <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Severity Level</div>
+              <div className="font-semibold text-rose-600 mt-1 uppercase text-sm">
                 {alert.numericSeverity ? `${alert.numericSeverity} / 5` : alert.severity}
               </div>
             </div>
-            <div className="p-2.5 rounded bg-bg-secondary border border-border">
-              <div className="text-[9px] text-text-muted uppercase">Triage Status</div>
-              <div className="font-semibold mt-0.5 uppercase text-text-secondary">
-                {alert.acknowledged ? 'ACKNOWLEDGED' : 'PENDING ACTION'}
+            <div className="p-3 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+              <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Triage Status</div>
+              <div className="font-semibold mt-1 uppercase text-slate-700 text-sm">
+                {alert.acknowledged ? 'Acknowledged' : 'Pending Action'}
               </div>
             </div>
           </div>
 
-          {/* Analytics Tier Mathematical Vector Data (schema.md) */}
+          {/* Analytics Tier Mathematical Vector Data */}
           {alert.metrics && (
-            <div className="p-3 rounded bg-bg-secondary border border-border text-xs font-mono space-y-1.5">
-              <div className="text-[10px] font-semibold text-text-primary uppercase tracking-wider">
-                Pipeline Mathematical Metrics (Analytics Tier)
+            <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70 text-xs space-y-2">
+              <div className="text-xs font-semibold text-slate-800">
+                Mathematical Perception Telemetry
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-text-secondary">
-                <div>Density: <span className="font-semibold text-text-primary">{alert.metrics.density} p/m²</span></div>
-                <div>Variance (σ²): <span className="font-semibold text-text-primary">{alert.metrics.velocity_variance}</span></div>
-                <div>Flow Vector: <span className="font-semibold text-text-primary">[{Array.isArray(alert.metrics.flow_vector) ? alert.metrics.flow_vector.join(', ') : '0, 0'}]</span></div>
-                <div>Headcount: <span className="font-semibold text-text-primary">{alert.metrics.headcount}</span></div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-slate-600">
+                <div>Density: <span className="font-semibold text-slate-900 tabular-nums">{alert.metrics.density} p/m²</span></div>
+                <div>Speed Variance (σ²): <span className="font-semibold text-slate-900 tabular-nums">{alert.metrics.velocity_variance}</span></div>
+                <div>Flow Vector: <span className="font-semibold text-slate-900">[{Array.isArray(alert.metrics.flow_vector) ? alert.metrics.flow_vector.join(', ') : '0, 0'}]</span></div>
+                <div>Headcount: <span className="font-semibold text-slate-900 tabular-nums">{alert.metrics.headcount}</span></div>
               </div>
             </div>
           )}
 
           {/* Resolution Form Accordion */}
           {showResolveForm && (
-            <form onSubmit={handleConfirmResolve} className="p-3 rounded border border-border bg-bg-secondary space-y-2">
-              <div className="text-xs font-semibold text-text-primary font-mono">
+            <form onSubmit={handleConfirmResolve} className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
+              <div className="text-xs font-semibold text-slate-800">
                 Operator Incident Resolution Notes
               </div>
               <textarea
                 value={resolutionNotes}
                 onChange={(e) => setResolutionNotes(e.target.value)}
                 placeholder="Enter actions taken (e.g. security physical response arrived, gates opened, flow restored)..."
-                className="input-field text-xs h-16 w-full font-mono"
+                className="input-field text-xs h-20 w-full"
                 required
               />
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowResolveForm(false)}
-                  className="btn-secondary text-[11px]"
+                  className="btn-secondary text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="btn-primary text-[11px]"
+                  className="btn-primary text-xs"
                 >
                   Confirm & Resolve
                 </button>
@@ -196,26 +195,26 @@ const SnapshotModal: React.FC<SnapshotModalProps> = ({
           )}
         </div>
 
-        {/* Modal Footer Actions (AppFlow.md Operator Journey) */}
-        <div className="px-5 py-3 border-t border-border bg-bg-secondary flex flex-wrap items-center justify-between gap-3 shrink-0">
-          <div className="text-[11px] font-mono text-text-muted">
-            {alert.acknowledgedBy ? `OPERATOR: ${alert.acknowledgedBy}` : 'AWAITING OPERATOR TRIAGE'}
+        {/* Modal Footer Actions */}
+        <div className="px-6 py-4 border-t border-slate-100 bg-white/80 flex flex-wrap items-center justify-between gap-3 shrink-0">
+          <div className="text-xs text-slate-400 font-medium">
+            {alert.acknowledgedBy ? `Handled by ${alert.acknowledgedBy}` : 'Awaiting Operator Triage'}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {!alert.acknowledged && (
               <>
                 <button
                   type="button"
                   onClick={handleMarkFalsePositive}
-                  className="px-3 py-1.5 rounded text-xs font-mono font-medium border border-border hover:bg-bg-tertiary transition-colors text-text-secondary"
+                  className="btn-secondary"
                 >
                   False Positive
                 </button>
                 <button
                   type="button"
                   onClick={handleDispatchSecurity}
-                  className="px-3 py-1.5 rounded text-xs font-mono font-medium bg-warn text-white hover:bg-warn-dark transition-colors"
+                  className="px-4 py-2 rounded-xl text-xs font-medium bg-[#ff9500] text-white hover:bg-[#e08500] transition-all shadow-sm active:scale-95"
                 >
                   Dispatch Security
                 </button>

@@ -55,11 +55,14 @@ export default {
         },
       },
       fontFamily: {
-        mono: ['JetBrains Mono', 'ui-monospace', 'Consolas', 'monospace'],
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        sans: ['"Plus Jakarta Sans"', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         'card': '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05)',
+        'glass': '0 8px 30px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02)',
+        'specular': 'inset 0 1px 1px rgba(255, 255, 255, 0.95), 0 8px 24px -4px rgba(15, 23, 42, 0.05)',
+        'floating': '0 20px 40px -12px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(226, 232, 240, 0.8)',
       },
       backgroundImage: {
         'grid-subtle':

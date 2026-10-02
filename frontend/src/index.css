@@ -56,65 +56,78 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md
-           bg-accent text-white font-medium text-xs tracking-wide
-           hover:bg-accent-dark transition-colors duration-150
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl
+           bg-[#0071e3] text-white font-medium text-xs tracking-tight shadow-sm
+           hover:bg-[#0077ed] active:scale-[0.98] transition-all duration-150
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md
-           bg-bg-tertiary border border-border text-text-primary font-medium text-xs
-           hover:bg-bg-card hover:border-border-strong transition-colors duration-150
-           disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl
+           bg-slate-100/90 border border-slate-200/70 text-slate-700 font-medium text-xs
+           hover:bg-slate-200/80 active:scale-[0.98] transition-all duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed shadow-sm;
   }
 
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md
-           bg-danger text-white font-medium text-xs
-           hover:bg-danger-dark transition-colors duration-150
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl
+           bg-[#ff3b30] text-white font-medium text-xs shadow-sm
+           hover:bg-[#e0342a] active:scale-[0.98] transition-all duration-150
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .input-field {
-    @apply w-full px-3 py-2 rounded-md
-           bg-bg-tertiary border border-border
-           text-text-primary placeholder-text-muted text-xs
-           focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent
-           transition-colors duration-150;
+    @apply w-full px-3.5 py-2 rounded-xl
+           bg-slate-50/80 border border-slate-200/90
+           text-slate-800 placeholder-slate-400 text-xs font-sans
+           focus:outline-none focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20
+           transition-all duration-150;
   }
 
   .card {
-    @apply bg-bg-card border border-border rounded-lg shadow-card;
+    @apply bg-white/85 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-glass
+           transition-all duration-200;
   }
 
   .chip {
-    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono tracking-tight font-medium border;
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-sans font-medium tracking-normal border shadow-sm;
   }
 
   .chip-safe {
-    @apply chip bg-safe-bg text-safe-light border-safe/30;
+    @apply chip bg-emerald-50 text-emerald-700 border-emerald-200/80;
   }
 
   .chip-warn {
-    @apply chip bg-warn-bg text-warn-light border-warn/30;
+    @apply chip bg-amber-50 text-amber-700 border-amber-200/80;
   }
 
   .chip-danger {
-    @apply chip bg-danger-bg text-danger-light border-danger/30;
+    @apply chip bg-red-50 text-red-700 border-red-200/80;
   }
 
   .chip-critical {
-    @apply chip bg-critical-bg text-critical-light border-critical/40;
+    @apply chip bg-rose-100 text-rose-800 border-rose-300 font-semibold;
   }
 
   .mono {
-    font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
     font-variant-numeric: tabular-nums;
   }
 
   .label-sm {
-    @apply text-[10px] uppercase tracking-wider text-text-muted font-mono font-semibold;
+    @apply text-[11px] uppercase tracking-wider text-slate-500 font-semibold;
+  }
+
+  .glass-hud {
+    @apply bg-white/80 backdrop-blur-xl border border-white/60 shadow-glass rounded-xl;
+  }
+
+  .mac-segmented {
+    @apply p-1 rounded-xl bg-slate-200/60 backdrop-blur-md flex items-center gap-1 text-xs font-medium text-slate-600;
+  }
+
+  .mac-pill-active {
+    @apply bg-white text-slate-900 shadow-sm font-semibold rounded-lg;
   }
 }
 

@@ -50,12 +50,12 @@ const ZoneCalibrationModal: React.FC<ZoneCalibrationModalProps> = ({
 
     if (points.length >= 3) {
       ctx.closePath();
-      ctx.fillStyle = 'rgba(37, 99, 235, 0.25)';
+      ctx.fillStyle = 'rgba(0, 113, 227, 0.22)';
       ctx.fill();
     }
 
     ctx.lineWidth = 2.5;
-    ctx.strokeStyle = '#2563eb';
+    ctx.strokeStyle = '#0071e3';
     ctx.stroke();
 
     // Draw vertices
@@ -64,13 +64,13 @@ const ZoneCalibrationModal: React.FC<ZoneCalibrationModalProps> = ({
       ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
       ctx.fillStyle = '#ffffff';
       ctx.fill();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#0071e3';
       ctx.stroke();
 
       // Vertex label
       ctx.fillStyle = '#0f172a';
-      ctx.font = 'bold 10px monospace';
+      ctx.font = 'bold 11px system-ui, sans-serif';
       ctx.fillText(`P${idx + 1}`, pt.x + 8, pt.y - 4);
     });
   }, [points]);
@@ -97,7 +97,7 @@ const ZoneCalibrationModal: React.FC<ZoneCalibrationModalProps> = ({
   const handleSaveZone = async (e: React.FormEvent) => {
     e.preventDefault();
     if (points.length < 3) {
-      alert('Please click on the video feed to define at least 3 points for the zone boundary.');
+      alert('Please click on the video feed to define at least 3 perimeter points.');
       return;
     }
     if (!zoneName.trim()) {
@@ -107,7 +107,6 @@ const ZoneCalibrationModal: React.FC<ZoneCalibrationModalProps> = ({
 
     setIsSubmitting(true);
 
-    // Preset sensitivity threshold definitions
     const thresholds =
       preset === 'chokepoint'
         ? { density_high: 2.2, density_critical: 3.8, bottleneck_speed_max: 1.0, variance_surge: 2.8 }
@@ -135,49 +134,52 @@ const ZoneCalibrationModal: React.FC<ZoneCalibrationModalProps> = ({
 
       if (response.ok) {
         const saved = await response.json();
-        setSuccessMsg(`Zone "${saved.name}" successfully calibrated and active in pipeline!`);
+        setSuccessMsg(`Zone "${saved.name}" successfully calibrated and active!`);
         if (onZoneCreated) onZoneCreated(saved);
         setTimeout(() => {
           onClose();
-        }, 1400);
+        }, 1300);
       } else {
         const err = await response.text();
         alert(`Failed to save zone: ${err}`);
       }
-    } catch (err: any) {
-      // Local fallback simulation if server is unreachable
+    } catch {
       setSuccessMsg(`Zone "${zoneName}" saved locally.`);
       setTimeout(() => {
         onClose();
-      }, 1400);
+      }, 1300);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in font-mono">
-      <div className="relative w-full max-w-4xl rounded-lg bg-bg-card border border-border shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/35 backdrop-blur-md animate-fade-in font-sans">
+      <div className="relative w-full max-w-4xl rounded-3xl bg-white/95 backdrop-blur-2xl border border-white/80 shadow-floating overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-bg-secondary shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-            <div className="text-xs font-semibold text-text-primary uppercase tracking-wider">
-              SPATIAL ZONE CALIBRATOR · {cameraId.toUpperCase()} ({cameraName})
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white/80 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="w-3 h-3 rounded-full bg-rose-400" />
+              <span className="w-3 h-3 rounded-full bg-amber-400" />
+              <span className="w-3 h-3 rounded-full bg-emerald-400" />
+            </div>
+            <div className="text-sm font-semibold text-slate-800 tracking-tight">
+              Spatial Detection Zone Calibrator · {cameraId.toUpperCase()} ({cameraName})
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-tertiary transition-colors"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
             ✕
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-5 space-y-4 overflow-y-auto">
+        <div className="p-6 space-y-4 overflow-y-auto">
           {successMsg && (
-            <div className="p-3 rounded bg-safe-bg border border-safe/30 text-safe-light text-xs font-mono">
+            <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium">
               ✓ {successMsg}
             </div>
           )}
@@ -185,7 +187,7 @@ const ZoneCalibrationModal: React.FC<ZoneCalibrationModalProps> = ({
           {/* Interactive Canvas on Top of Video */}
           <div
             ref={containerRef}
-            className="relative aspect-[16/9] w-full rounded overflow-hidden bg-black border border-border cursor-crosshair select-none"
+            className="relative aspect-[16/9] w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-200/80 cursor-crosshair select-none shadow-sm"
           >
             <video
               src={videoSrc}
@@ -202,24 +204,24 @@ const ZoneCalibrationModal: React.FC<ZoneCalibrationModalProps> = ({
               onClick={handleCanvasClick}
               className="absolute inset-0 w-full h-full z-10"
             />
-            <div className="absolute top-2 left-2 z-20 text-[10px] text-white/90 bg-black/70 px-2 py-1 rounded border border-white/10 backdrop-blur-sm">
-              CLICK VIDEO TO ADD POLYGON VERTICES ({points.length} POINTS)
+            <div className="absolute top-3 left-3 z-20 text-xs text-white/95 bg-black/60 px-3 py-1 rounded-full border border-white/20 backdrop-blur-md font-medium">
+              Click video to add perimeter points ({points.length} vertices)
             </div>
             {points.length > 0 && (
               <button
                 type="button"
                 onClick={handleResetPoints}
-                className="absolute top-2 right-2 z-20 text-[10px] text-white/90 bg-danger/80 hover:bg-danger px-2.5 py-1 rounded transition-colors"
+                className="absolute top-3 right-3 z-20 text-xs font-medium text-white bg-rose-500/90 hover:bg-rose-600 px-3 py-1 rounded-full shadow-sm transition-colors"
               >
-                CLEAR POINTS
+                Clear Points
               </button>
             )}
           </div>
 
           {/* Configuration Form */}
-          <form onSubmit={handleSaveZone} className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div className="space-y-1">
-              <label className="text-[10px] text-text-muted uppercase">Zone Identifier / Name</label>
+          <form onSubmit={handleSaveZone} className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-500">Zone Name</label>
               <input
                 type="text"
                 value={zoneName}
@@ -230,8 +232,8 @@ const ZoneCalibrationModal: React.FC<ZoneCalibrationModalProps> = ({
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-[10px] text-text-muted uppercase">Calibrated Ground Area (m²)</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-500">Ground Area (m²)</label>
               <input
                 type="number"
                 min="5"
@@ -244,27 +246,27 @@ const ZoneCalibrationModal: React.FC<ZoneCalibrationModalProps> = ({
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-[10px] text-text-muted uppercase">Sensitivity Threshold Preset</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-500">Sensitivity Preset</label>
               <select
                 value={preset}
                 onChange={(e) => setPreset(e.target.value as any)}
                 className="input-field text-xs w-full"
               >
                 <option value="standard">Standard Venue (3.0 p/m²)</option>
-                <option value="chokepoint">Narrow Chokepoint / Gate (2.2 p/m²)</option>
-                <option value="concourse">Wide Open Concourse (3.8 p/m²)</option>
+                <option value="chokepoint">Narrow Gate / Escalator (2.2 p/m²)</option>
+                <option value="concourse">Wide Concourse (3.8 p/m²)</option>
               </select>
             </div>
 
-            <div className="col-span-full pt-2 flex items-center justify-between border-t border-border">
-              <div className="text-[10px] text-text-muted">
+            <div className="col-span-full pt-3 flex items-center justify-between border-t border-slate-100">
+              <div className="text-xs text-slate-500">
                 {points.length < 3
                   ? '⚠️ Define at least 3 perimeter points to complete zone geometry.'
                   : `✓ Polygon closed with ${points.length} vertices. Area calibrated to ${areaSqM} m².`}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <button
                   type="button"
                   onClick={onClose}
