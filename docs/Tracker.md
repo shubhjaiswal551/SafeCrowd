@@ -31,14 +31,14 @@ checked off (see `implementationPlan.md` for why the ordering matters).
 - [x] Define PRD-compliant anomaly thresholds (prevents false alarms on static dense queues)
 - [x] Unit test against normal dense-queue, surge, and dispersal footage (`ml/analytics/test_analytics.py`)
 
-## Phase 4 — Backend & Alerts ← Current
+## Phase 4 — Backend & Alerts ✅
 
 - [x] FastAPI modular scaffold with resource routers (`cameras.py`, `zones.py`, `incidents.py`, `auth.py`, `websocket.py`)
 - [x] Pydantic schemas mirroring `docs/schema.md` field-for-field
 - [x] WebSocket broadcast endpoints (`/ws/crowd-feed`, `/ws/alerts`)
 - [x] REST endpoints: cameras CRUD, zones CRUD, incident triage & resolution, JWT auth & RBAC
 - [x] Persistent database models (SQLAlchemy 2.0 async engine + SQLite/Postgres schemas)
-- [ ] Redis alert queue wiring (live pub/sub queue)
+- [x] Redis alert queue wiring (live pub/sub queue with resilient fallback)
 
 ## Phase 5 — Dashboard ✅
 

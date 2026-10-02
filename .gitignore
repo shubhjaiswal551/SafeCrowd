@@ -33,7 +33,10 @@ dist-ssr
 
 # Python & ML
 backend/venv/
-backend/__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
 *.pt
 *.onnx
 runs/

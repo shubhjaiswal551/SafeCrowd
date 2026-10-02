@@ -19,6 +19,7 @@ logging.basicConfig(
 logger = logging.getLogger("safecrowd.backend")
 
 from .core.database import engine, Base
+from .core.redis_broker import alert_broker
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,6 +27,9 @@ async def lifespan(app: FastAPI):
     logger.info("Initializing database tables...")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    # Startup: Initialize Redis broker connection
+    await alert_broker.connect()
 
     # Startup: Launch video inference pipeline in background
     logger.info("Starting SafeCrowd analytics background worker...")
@@ -35,6 +39,7 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down SafeCrowd analytics background worker...")
     stream_worker.is_running = False
     task.cancel()
+    await alert_broker.close()
 
 app = FastAPI(
     title="SafeCrowd Analytics & Alerting API",
@@ -63,5 +68,6 @@ async def health_check():
     return {
         "status": "online",
         "service": "safecrowd-backend",
+        "redis_connected": alert_broker.is_connected,
         "clients_connected": len(stream_worker.connected_clients),
     }

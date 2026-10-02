@@ -13,3 +13,4 @@ aiosqlite
 asyncpg
 python-jose[cryptography]
 passlib[bcrypt]
+redis>=5.0.0

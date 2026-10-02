@@ -25,6 +25,7 @@ from ml.analytics.metrics import (
 from ml.analytics.anomaly import detect_anomaly
 from ..routers.incidents import INCIDENTS_DB
 from ..routers.cameras import CAMERAS_DB
+from ..core.redis_broker import alert_broker
 
 logger = logging.getLogger("safecrowd.stream_worker")
 
@@ -202,6 +203,24 @@ class StreamWorker:
                         "notes": None,
                     }
                     logger.warning(f"🚨 [Phase 3 Alert Engine] New incident logged: {new_inc_id} on {cam_key} ({event_type})")
+
+                    # Phase 4: Push to Redis Live Alert Queue (key: alerts:live:{camera_id}, TTL: 30s)
+                    redis_alert_payload = {
+                        "camera_id": cam_key,
+                        "zone_id": stream["zone_id"],
+                        "event_type": event_type,
+                        "severity": severity or 3,
+                        "detected_at": now_iso,
+                        "metrics": {
+                            "density": density_val,
+                            "flow_vector": list(flow_vec),
+                            "velocity_variance": vel_variance,
+                            "headcount": headcount,
+                            "avg_speed": avg_speed,
+                        },
+                        "snapshot_url": f"/{stream['default_path'].split('/')[-1]}",
+                    }
+                    asyncio.create_task(alert_broker.push_alert(cam_key, redis_alert_payload, ttl_seconds=30))
 
                 payload = {
                     "camera_id": cam_key,
