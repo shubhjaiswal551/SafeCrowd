@@ -25,9 +25,15 @@ from ml.analytics.metrics import (
 from ml.analytics.anomaly import detect_anomaly
 from ..routers.incidents import INCIDENTS_DB
 from ..routers.cameras import CAMERAS_DB
+from ..routers.zones import ZONES_DB
 from ..core.redis_broker import alert_broker
 
 logger = logging.getLogger("safecrowd.stream_worker")
+
+SNAPSHOTS_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "snapshots")
+)
+os.makedirs(SNAPSHOTS_DIR, exist_ok=True)
 
 class StreamWorker:
     def __init__(self):
@@ -159,11 +165,16 @@ class StreamWorker:
                 speeds = [math.sqrt(v[0]**2 + v[1]**2) for v in velocities]
                 avg_speed = round(float(np.mean(speeds)), 2) if speeds else 0.0
 
+                # Per-Zone Custom Sensitivity Thresholds (Improvement #4)
+                zone_cfg = ZONES_DB.get(stream["zone_id"], {})
+                zone_thresholds = zone_cfg.get("thresholds")
+
                 is_anomaly, event_type, severity = detect_anomaly(
                     density=density_val,
                     avg_speed=avg_speed,
                     velocity_variance=vel_variance,
                     turbulence=turbulence,
+                    thresholds=zone_thresholds,
                 )
 
                 # Debouncing: 8 sustained frames
@@ -180,6 +191,30 @@ class StreamWorker:
                 if verified_anomaly and event_type and (cur_time - last_logged > 30.0):
                     self.last_incident_time[cam_key] = cur_time
                     new_inc_id = f"inc-{int(cur_time)}"
+
+                    # Automated Frame Snapshot Capture to Disk (Improvement #2)
+                    snapshot_filename = f"{new_inc_id}.jpg"
+                    snapshot_disk_path = os.path.join(SNAPSHOTS_DIR, snapshot_filename)
+                    snapshot_rel_url = f"/snapshots/{snapshot_filename}"
+
+                    try:
+                        snapshot_img = frame_resized.copy()
+                        cv2.rectangle(snapshot_img, (10, 10), (950, 60), (0, 0, 0), -1)
+                        cv2.putText(
+                            snapshot_img,
+                            f"SAFECROWD ANOMALY: {event_type.upper()} [SEV {severity or 3}] | Cam: {cam_key} | {now_iso}",
+                            (20, 42),
+                            cv2.FONT_HERSHEY_SIMPLEX,
+                            0.65,
+                            (0, 80, 255) if (severity or 3) >= 4 else (0, 220, 255),
+                            2,
+                            cv2.LINE_AA,
+                        )
+                        cv2.imwrite(snapshot_disk_path, snapshot_img)
+                    except Exception as err:
+                        logger.error(f"Failed to write snapshot image to disk: {err}")
+                        snapshot_rel_url = f"/{stream['default_path'].split('/')[-1]}"
+
                     INCIDENTS_DB[new_inc_id] = {
                         "id": new_inc_id,
                         "camera_id": cam_key,
@@ -187,7 +222,7 @@ class StreamWorker:
                         "event_type": event_type,
                         "severity": severity or 3,
                         "detected_at": now_iso,
-                        "snapshot_url": f"/{stream['default_path'].split('/')[-1]}",
+                        "snapshot_url": snapshot_rel_url,
                         "metrics_json": {
                             "density": density_val,
                             "flow_vector": list(flow_vec),
@@ -202,7 +237,7 @@ class StreamWorker:
                         "resolved_at": None,
                         "notes": None,
                     }
-                    logger.warning(f"🚨 [Phase 3 Alert Engine] New incident logged: {new_inc_id} on {cam_key} ({event_type})")
+                    logger.warning(f"🚨 [Phase 3 Alert Engine] New incident logged: {new_inc_id} on {cam_key} ({event_type}) -> Snapshot: {snapshot_rel_url}")
 
                     # Phase 4: Push to Redis Live Alert Queue (key: alerts:live:{camera_id}, TTL: 30s)
                     redis_alert_payload = {
@@ -218,9 +253,14 @@ class StreamWorker:
                             "headcount": headcount,
                             "avg_speed": avg_speed,
                         },
-                        "snapshot_url": f"/{stream['default_path'].split('/')[-1]}",
+                        "snapshot_url": snapshot_rel_url,
                     }
                     asyncio.create_task(alert_broker.push_alert(cam_key, redis_alert_payload, ttl_seconds=30))
+
+                    # Improvement #3: External Dispatch Webhook/Telegram for Severity >= 4
+                    if (severity or 3) >= 4:
+                        from .notifier import notifier
+                        asyncio.create_task(notifier.dispatch_emergency_notification(INCIDENTS_DB[new_inc_id]))
 
                 payload = {
                     "camera_id": cam_key,

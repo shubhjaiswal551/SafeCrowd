@@ -76,6 +76,11 @@ app.include_router(zones.router)
 app.include_router(incidents.router)
 app.include_router(websocket.router)
 
+from fastapi.staticfiles import StaticFiles
+snapshots_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "snapshots")
+os.makedirs(snapshots_dir, exist_ok=True)
+app.mount("/snapshots", StaticFiles(directory=snapshots_dir), name="snapshots")
+
 @app.get("/health")
 async def health_check():
     return {

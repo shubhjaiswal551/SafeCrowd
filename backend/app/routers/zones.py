@@ -18,6 +18,12 @@ ZONES_DB: Dict[str, Dict] = {
         "name": "Main Entrance Gate",
         "polygon_coords": [(50.0, 50.0), (900.0, 50.0), (900.0, 500.0), (50.0, 500.0)],
         "area_sq_m": 45.0,
+        "thresholds": {
+            "density_high": 3.0,
+            "density_critical": 5.0,
+            "variance_surge": 3.5,
+            "bottleneck_speed_max": 0.8,
+        },
     },
     "zone-002": {
         "id": "zone-002",
@@ -25,6 +31,12 @@ ZONES_DB: Dict[str, Dict] = {
         "name": "Central Courtyard",
         "polygon_coords": [(30.0, 30.0), (800.0, 30.0), (800.0, 480.0), (30.0, 480.0)],
         "area_sq_m": 60.0,
+        "thresholds": {
+            "density_high": 2.8,
+            "density_critical": 4.5,
+            "variance_surge": 3.0,
+            "bottleneck_speed_max": 0.9,
+        },
     },
 }
 
@@ -46,6 +58,7 @@ async def create_zone(
         "name": zone_in.name,
         "polygon_coords": zone_in.polygon_coords,
         "area_sq_m": zone_in.area_sq_m,
+        "thresholds": zone_in.thresholds,
     }
     ZONES_DB[zid] = zone
     return zone

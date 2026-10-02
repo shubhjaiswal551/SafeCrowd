@@ -11,6 +11,7 @@ from ..models.schemas import (
     IncidentCreate,
     IncidentResponse,
     IncidentAcknowledge,
+    IncidentDispatch,
     IncidentResolve,
     MetricsData,
 )
@@ -139,3 +140,21 @@ async def resolve_incident(
     note_prefix = "[FALSE POSITIVE] " if res.is_false_positive else ""
     incident["notes"] = f"{note_prefix}{res.notes.strip()}"
     return incident
+
+@router.post("/{incident_id}/dispatch")
+async def dispatch_incident(
+    incident_id: str,
+    dispatch_in: IncidentDispatch,
+    user: Dict = Depends(get_current_user),
+):
+    if incident_id not in INCIDENTS_DB:
+        raise HTTPException(status_code=404, detail="Incident not found")
+
+    incident = INCIDENTS_DB[incident_id]
+    from ..services.notifier import notifier
+    dispatched = await notifier.dispatch_emergency_notification(incident, custom_note=dispatch_in.custom_note)
+    return {
+        "status": "dispatched" if dispatched else "failed",
+        "incident_id": incident_id,
+        "operator": dispatch_in.operator_id or user.get("email"),
+    }

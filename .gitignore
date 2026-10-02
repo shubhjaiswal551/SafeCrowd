@@ -41,3 +41,5 @@ backend/venv/
 *.onnx
 runs/
 *.db
+backend/snapshots/*
+!backend/snapshots/.gitkeep

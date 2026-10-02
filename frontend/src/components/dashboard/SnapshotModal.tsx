@@ -93,18 +93,26 @@ const SnapshotModal: React.FC<SnapshotModalProps> = ({
 
         {/* Modal Body */}
         <div className="p-5 space-y-4 overflow-y-auto">
-          {/* Frozen / Active Video Frame */}
+          {/* Frozen / Active Evidence Media */}
           <div className="relative aspect-[16/9] w-full rounded overflow-hidden bg-black border border-border">
-            <video
-              src={videoSrc}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full h-full object-cover"
-            />
+            {videoSrc.match(/\.(jpeg|jpg|png|webp)($|\?)/i) ? (
+              <img
+                src={videoSrc.startsWith('/snapshots/') ? `http://localhost:8000${videoSrc}` : videoSrc}
+                alt="Anomaly Snapshot Evidence"
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <video
+                src={videoSrc}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              />
+            )}
             <div className="absolute top-2 left-2 text-[10px] font-mono text-white/90 bg-black/70 px-2 py-0.5 rounded border border-white/10">
-              FRAME CAPTURE · {new Date(alert.timestamp).toLocaleTimeString()} UTC
+              EVIDENCE CAPTURE · {new Date(alert.timestamp).toLocaleTimeString()} UTC
             </div>
             <div className="absolute bottom-2 right-2 text-[10px] font-mono text-white/90 bg-black/70 px-2 py-0.5 rounded border border-white/10">
               SENSOR: {alert.cameraId.toUpperCase()} [{alert.zoneName}]

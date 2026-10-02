@@ -4,7 +4,7 @@ Mirrors docs/schema.md field-for-field.
 """
 
 from datetime import datetime
-from typing import List, Optional, Tuple, Any
+from typing import List, Optional, Tuple, Any, Dict
 from pydantic import BaseModel, Field
 
 class MetricsData(BaseModel):
@@ -38,6 +38,10 @@ class IncidentCreate(IncidentBase):
 class IncidentAcknowledge(BaseModel):
     operator_id: str
     operator_name: Optional[str] = None
+
+class IncidentDispatch(BaseModel):
+    operator_id: str
+    custom_note: Optional[str] = None
 
 class IncidentResolve(BaseModel):
     operator_id: str
@@ -76,6 +80,10 @@ class ZoneBase(BaseModel):
     name: str
     polygon_coords: List[Tuple[float, float]] = Field(default_factory=list, description="Pixel space polygon vertices")
     area_sq_m: Optional[float] = None
+    thresholds: Optional[Dict[str, float]] = Field(
+        default=None,
+        description="Optional custom anomaly thresholds: density_high, density_critical, variance_surge, bottleneck_speed_max, dispersal_speed_min",
+    )
 
 class ZoneCreate(ZoneBase):
     pass
