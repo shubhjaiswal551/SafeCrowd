@@ -315,16 +315,20 @@ const Dashboard: React.FC = () => {
               ].map((s) => (
                 <div
                   key={s.label}
-                  className="card p-4 flex flex-col justify-between"
+                  className="card group relative p-4 flex flex-col justify-between cursor-default transition-all duration-200 ease-out hover:-translate-y-1 hover:bg-white hover:border-slate-300 hover:shadow-[0_12px_28px_-4px_rgba(15,23,42,0.07),0_2px_6px_rgba(15,23,42,0.03)]"
                 >
                   <div className="flex items-start justify-between">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{s.label}</span>
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-slate-700 transition-colors duration-150">
+                      {s.label}
+                    </span>
                     <span className={s.chipClass}>{s.chipText}</span>
                   </div>
-                  <div className={`font-sans text-3xl font-extrabold my-2 tracking-tight tabular-nums ${s.accent}`}>
+                  <div
+                    className={`font-sans text-3xl font-extrabold my-2 tracking-tight tabular-nums transition-transform duration-200 origin-left group-hover:scale-[1.015] ${s.accent}`}
+                  >
                     {s.value}
                   </div>
-                  <div className="text-[11px] text-slate-400 font-medium">
+                  <div className="text-[11px] text-slate-400 font-medium group-hover:text-slate-500 transition-colors duration-150">
                     {s.sub}
                   </div>
                 </div>

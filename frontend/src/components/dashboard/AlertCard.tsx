@@ -13,37 +13,27 @@ const severityConfig: Record<
     label: string;
     chipClass: string;
     dotColor: string;
-    borderColor: string;
-    bgAccent: string;
   }
 > = {
   info: {
     label: 'Information',
     chipClass: 'chip-safe',
     dotColor: 'bg-emerald-500',
-    borderColor: 'border-slate-200/80',
-    bgAccent: 'bg-white',
   },
   warning: {
     label: 'Warning',
     chipClass: 'chip-warn',
     dotColor: 'bg-amber-500',
-    borderColor: 'border-amber-200/80',
-    bgAccent: 'bg-amber-50/40',
   },
   high: {
     label: 'High Severity',
     chipClass: 'chip-danger',
     dotColor: 'bg-red-500',
-    borderColor: 'border-red-200/80',
-    bgAccent: 'bg-red-50/40',
   },
   critical: {
     label: 'Critical Alert',
     chipClass: 'chip-critical',
     dotColor: 'bg-rose-600 animate-ping',
-    borderColor: 'border-rose-300',
-    bgAccent: 'bg-rose-50/60',
   },
 };
 
@@ -66,7 +56,7 @@ const AlertCard: React.FC<AlertCardProps> = ({
 
   return (
     <article
-      className={`relative p-3.5 rounded-2xl border ${cfg.borderColor} ${cfg.bgAccent} backdrop-blur-md shadow-sm transition-all duration-200 hover:shadow-md animate-fade-in`}
+      className="relative p-3.5 rounded-2xl border border-slate-200/80 bg-white/95 backdrop-blur-md shadow-xs transition-all duration-200 hover:border-slate-300 hover:shadow-sm"
     >
       <div className="flex items-start gap-3">
         <div className={`mt-1.5 w-2 h-2 shrink-0 rounded-full ${cfg.dotColor}`} />

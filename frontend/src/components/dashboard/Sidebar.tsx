@@ -69,16 +69,16 @@ const Sidebar: React.FC<SidebarProps> = ({ alertCount = 0 }) => {
       {/* Brand Header */}
       <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#0071e3] to-[#38bdf8] flex items-center justify-center text-white shadow-sm shadow-[#0071e3]/20">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.35 10.56 7.27 11.29a1 1 0 0 0 1.46 0C13.65 20.56 20 15.25 20 10c0-4.42-3.58-8-8-8zm0 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
-            </svg>
-          </div>
+          <img
+            src="/logo.png"
+            alt="SafeCrowd Logo"
+            className="h-10 w-auto max-w-[48px] object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.08)] shrink-0"
+          />
           <div className="flex flex-col leading-tight">
-            <span className="text-slate-900 font-bold tracking-tight text-sm font-sans">
+            <span className="text-slate-900 font-bold tracking-tight text-base font-sans">
               SafeCrowd
             </span>
-            <span className="text-[10px] text-slate-400 font-medium">
+            <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider font-mono">
               Control Station
             </span>
           </div>
