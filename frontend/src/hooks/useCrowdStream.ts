@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { CrowdEvent } from '../types/crowdEvent';
+import { WS_BASE_URL } from '../config/api';
 
 interface UseCrowdSocketReturn {
   isConnected: boolean;
@@ -10,7 +11,7 @@ interface UseCrowdSocketReturn {
 
 export function useCrowdStream(
   onEvent?: (event: CrowdEvent) => void,
-  url: string = 'ws://localhost:8000/ws/crowd-feed'
+  url: string = WS_BASE_URL
 ): UseCrowdSocketReturn {
   const [isConnected, setIsConnected] = useState(false);
   const [lastEvent, setLastEvent] = useState<CrowdEvent | null>(null);

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { Alert } from '../../types/crowdEvent';
+import { API_BASE_URL } from '../../config/api';
 
 interface SnapshotModalProps {
   alert: Alert | null;
@@ -96,7 +97,7 @@ const SnapshotModal: React.FC<SnapshotModalProps> = ({
           <div className="relative aspect-[16/9] w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-200/80 shadow-sm">
             {videoSrc.match(/\.(jpeg|jpg|png|webp)($|\?)/i) ? (
               <img
-                src={videoSrc.startsWith('/snapshots/') ? `http://localhost:8000${videoSrc}` : videoSrc}
+                src={videoSrc.startsWith('/snapshots/') ? `${API_BASE_URL}${videoSrc}` : videoSrc}
                 alt="Anomaly Snapshot Evidence"
                 className="w-full h-full object-contain"
               />

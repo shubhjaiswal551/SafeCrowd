@@ -13,6 +13,7 @@ import {
   onAlert,
 } from '../mocks/crowdSimulator';
 import type { Incident, AlertSeverity, IncidentStatus } from '../types/crowdEvent';
+import { API_BASE_URL } from '../config/api';
 
 const ZONES = ['Main Entrance Gate', 'Central Courtyard'];
 
@@ -29,7 +30,7 @@ const IncidentLog: React.FC = () => {
 
   useEffect(() => {
     // Fetch persisted incidents from backend API
-    fetch('http://localhost:8000/incidents/')
+    fetch(`${API_BASE_URL}/incidents/`)
       .then((res) => (res.ok ? res.json() : []))
       .then((data: any[]) => {
         if (Array.isArray(data) && data.length > 0) {

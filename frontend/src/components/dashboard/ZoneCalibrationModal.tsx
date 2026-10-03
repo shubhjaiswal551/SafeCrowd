@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { API_BASE_URL } from '../../config/api';
 
 interface Point {
   x: number;
@@ -123,7 +124,7 @@ const ZoneCalibrationModal: React.FC<ZoneCalibrationModalProps> = ({
     };
 
     try {
-      const response = await fetch('http://localhost:8000/zones', {
+      const response = await fetch(`${API_BASE_URL}/zones`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
