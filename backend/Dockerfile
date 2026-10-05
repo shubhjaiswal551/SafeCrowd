@@ -19,16 +19,18 @@ WORKDIR /app
 # Copy dependency specifications
 COPY backend/requirements.txt requirements.txt
 
-# Install PyTorch CPU/CUDA and Python dependencies
+# Install PyTorch CPU and Python dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cu124 && \
+    pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy ML pipeline and backend source code
+# Copy ML pipeline, backend source code, and demo video assets
 COPY ml/ /app/ml/
 COPY backend/ /app/backend/
+COPY frontend/public/ /app/frontend/public/
 
+ENV PORT=8000
 EXPOSE 8000
 
-# Start Uvicorn ASGI server
-CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--app-dir", "backend"]
+# Start Uvicorn ASGI server with dynamic Render PORT support
+CMD ["sh", "-c", "python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --app-dir backend"]

@@ -11,7 +11,10 @@ import json
 import logging
 import os
 from typing import Dict, Optional, Callable, List
-import redis.asyncio as aioredis
+try:
+    import redis.asyncio as aioredis
+except ImportError:
+    aioredis = None
 
 logger = logging.getLogger("safecrowd.redis_broker")
 
@@ -20,13 +23,19 @@ REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 class AlertBroker:
     def __init__(self, url: str = REDIS_URL):
         self.url = url
-        self.client: Optional[aioredis.Redis] = None
+        self.client = None
         self.is_connected = False
         self._fallback_memory_store: Dict[str, dict] = {}
         self._subscribers: List[Callable[[dict], None]] = []
 
     async def connect(self):
         """Attempts to connect to Redis. Falls back to in-memory mode if unavailable."""
+        if aioredis is None:
+            self.is_connected = False
+            self.client = None
+            logger.info("ℹ️ [Redis Broker] Redis client library not installed. Operating in resilient In-Memory Broker mode.")
+            return
+
         try:
             self.client = aioredis.from_url(
                 self.url,

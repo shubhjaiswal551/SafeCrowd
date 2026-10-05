@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: safecrowd-backend
+    env: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEMO_MODE
+        value: "true"
+      - key: ALLOWED_ORIGINS
+        value: "https://safecrowd.vercel.app"
+      - key: PORT
+        value: "8000"
